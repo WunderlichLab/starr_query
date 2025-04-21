@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            
+        </style>
 
+        <!-- load the jQuery library -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    </head>
+    <body>
+        <!--page title-->
+        <h1 id="title">Title</h1>
+
+        <!--description paragraph-->
+        <p id="description">This is description.</p>
+
+        <!--error message-->
+        <div id="error">
+            {{ error_message | safe }}
+        </div>
+
+        <!-- form -->
+         <div id="form">
+            <form name="enhancer_form" action="{{ url_for('enhancer_query') }}" method="get">
+
+                <!-- here's the chromosome selctor -->
+                <label>
+                    Chromosome:
+                    <select name="chr" id="chr">
+                        <option value="2L">2L</option>
+                        <option value="2R">2R</option>
+                        <option value="3L">3L</option>
+                        <option value="3R">3R</option>
+                        <option value="4">4</option>
+                        <option value="X">X</option>
+                        <option value="Y">Y</option>
+                    </select>
+                </label>
+                
+                <!-- input box for enhancer start coordinate -->
+                <label>
+                    Start:
+                    <input type="number" id="start" name="start">
+                </label>
+    
+                <!-- input box for enhancer end coordinate -->
+                <label>
+                    End:
+                    <input type="number" id="end" name="end">
+                </label>
+    
+                <!--submit button-->
+                <input type="submit" value="submit">
+                <!--reset button-->
+                <input type="reset" value="reset">
+            </form>
+         </div>
+
+         <div id="message">
+            <strong>{{ message | safe }}</strong>
+        </div>
+        <!-- table for displaying results -->
+        <div id="table">
+            {{ table_html | safe }} <!--include | safe so you can pass in HTML table tags -->
+        </div>
+
+    </body>
+</html>
