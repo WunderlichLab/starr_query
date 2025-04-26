@@ -1,0 +1,27 @@
+{% if enhancers %}
+<table border="1" style="border-collapse: collapse; width: 100%; margin-top: 1em;">
+  <thead>
+    <tr>
+      <th>Chromosome</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>UCSC View</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in enhancers %}
+    <tr>
+      <td>{{ e[0] }}</td>
+      <td>{{ e[1] }}</td>
+      <td>{{ e[2] }}</td>
+      <td>
+        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&amp;position={{ e[0] }}:{{ e[1] }}-{{ e[2] }}"
+           target="_blank">View</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No enhancers found for that gene.</p>
+{% endif %}

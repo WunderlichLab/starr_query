@@ -1,52 +1,133 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Large-scale Enhancer Screen Database</title>
+
         <style>
-            
+            /* CSS for the tab */
+            .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 1em; }
+            .tab { padding: 0.5em 1em; cursor: pointer; }
+            .tab.active { font-weight: bold; border-bottom: 2px solid #000; }
+            /* Switching tabs */
+            .tab-content { display: none; }
+            .tab-content.active { display: block; }
         </style>
 
-        <!-- load the jQuery library -->
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     </head>
     <body>
-        <h1 id="title">Title</h1>
+
+        <!-- tab -->
+        <div class="tabs">
+            <div class="tab active" data-target="#enhancer-search">Enhancer→Gene</div>
+            <div class="tab"        data-target="#gene-search">Gene→Enhancer</div>
+        </div>
+
+        <h1 id="title">Large-scale Enhancer Screen Database</h1>
 
         <p id="description">This is description.</p>
 
-        <!-- form -->
-        <form name="enhancer_form" action="/submit" method="POST">
+        <!-- Enhancer→Gene -->
+        <div id="enhancer-search" class="tab-content active">
 
-            <!-- here's the chromosome selctor -->
-            <label>
-                Chromosome:
-                <select name="chr" id="chr">
-                    <option value="2L">2L</option>
-                    <option value="2R">2R</option>
-                    <option value="3L">3L</option>
-                    <option value="3R">3R</option>
-                    <option value="4">4</option>
-                    <option value="X">X</option>
-                    <option value="Y">Y</option>
-                </select>
-            </label>
-            
-            <!-- input box for enhancer start coordinate -->
-            <label>
-                Start:
-                <input type="number" id="start" name="start">
+            <!-- form -->
+            <form id="enhancer-form" name="enhancer_form" action="/submit_enhancer" method="POST">
+
+                <!-- here's the chromosome selctor -->
+                <label>
+                    Chromosome:
+                    <select name="chr" id="chr">
+                        <option value="2L">2L</option>
+                        <option value="2R">2R</option>
+                        <option value="3L">3L</option>
+                        <option value="3R">3R</option>
+                        <option value="4">4</option>
+                        <option value="X">X</option>
+                        <option value="Y">Y</option>
+                    </select>
+                </label>
+                
+                <!-- input box for enhancer start coordinate -->
+                <label>
+                    Start:
+                    <input type="number" id="start" name="start">
+                </label>
+
+                <!-- input box for enhancer end coordinate -->
+                <label>
+                    End:
+                    <input type="number" id="end" name="end">
+                </label>
+
+                <!--submit button-->
+                <button type="submit">Submit</button>
+
+            </form>
+
+            <!-- results will be displayed here -->
+            <div id="enhancer-results"></div>
+
+        </div>
+
+        <!-- Gene→Enhancer -->
+        <div id="gene-search" class="tab-content">
+
+            <form id="gene-form" name="gene_form" action="/submit_gene" method="POST">
+
+            <label>Gene Name:
+
+                <input type="text" id="gene_query" name="gene_query">
+
             </label>
 
-            <!-- input box for enhancer end coordinate -->
-            <label>
-                End:
-                <input type="number" id="end" name="end">
-            </label>
+            <button type="submit">Submit</button>
 
-            <!--submit button-->
-            <input type="submit" value="submit">
-            <!--reset button-->
-            <input type="reset" value="reset">
-        </form>
+            </form>
+
+            <!-- results will be displayed here -->
+            <div id="gene-results"></div>
+
+        </div>
+
+        <!-- load the jQuery library -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+        <script>
+            // Switching tabs
+            $('.tab').click(function(){
+                var tgt = $(this).data('target');
+
+                // tab active
+                $('.tab').removeClass('active');
+                $(this).addClass('active');
+
+                // contents active
+                $('.tab-content').removeClass('active');
+                $(tgt).addClass('active');
+            });
+
+            // enhancer→Gene（AJAX）
+            $('#enhancer-form').on('submit', function(e){
+                e.preventDefault();
+                $.post(
+                '/submit_enhancer',
+                $(this).serialize()
+                ).done(function(html){
+                $('#enhancer-results').html(html);
+                });
+            });
+
+            // Gene→エンハンサー 検索（AJAX）
+            $('#gene-form').on('submit', function(e){
+                e.preventDefault();
+                $.post(
+                '/submit_gene',
+                $(this).serialize()
+                ).done(function(html){
+                $('#gene-results').html(html);
+                });
+            });
+
+        </script>
 
     </body>
 </html>

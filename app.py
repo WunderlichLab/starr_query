@@ -55,21 +55,33 @@ def get_genes_by_enhancer(chr, start, end):
 #         print(f"Error connecting to the database: {e}")
 #         return []
 
+def get_enhancers_by_gene(gene_query):
+    # SELECT eg.chr, eg.start, eg.end
+    # FROM enhancer_to_gene eg
+    # JOIN gene g ON eg.gid = g.gid
+    # WHERE g.gid = %s OR g.name LIKE %s
+    return [
+        ("2L", 1000, 2000),
+        ("X", 50000, 51000)
+    ]
+
 @app.route('/')
 def home():
     return render_template('template.html')
 
-@app.route('/submit', methods=['POST'])
+@app.route('/submit_enhancer', methods=['POST'])
 def submit():
     chr = request.form['chr']
     start = int(request.form['start'])
     end = int(request.form['end'])
     genes = get_genes_by_enhancer(chr, start, end)
-    return render_template('find_gene_results.html',
-                           chr=chr,
-                           start=start,
-                           end=end,
-                           genes=genes)
+    return render_template('find_gene_results.html', genes=genes)
+
+@app.route('/submit_gene', methods=['POST'])
+def submit_gene():
+    query = request.form['gene_query']
+    enhancers = get_enhancers_by_gene(query)
+    return render_template('find_enhancer_results.html', enhancers=enhancers)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,32 +1,24 @@
-<!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Query Results</title>
-    </head>
-    <body>
-        <h2>Enhancer: {{ chr }}:{{ start }}-{{ end }}</h2>
-        {% if genes %}
-        <table border="1">
-            <tr><th>Gene ID</th><th>Gene Name</th><th>FlyBase</th></tr>
-            {% for g in genes %}
-            <tr>
-                <td>{{ g[0] }}</td>
-                <td>{{ g[1] }}</td>
-                <td><a href="https://flybase.org/reports/{{ g[0] }}" target="_blank">View</a></td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% else %}
-        <p>No genes found for this enhancer.</p>
-        {% endif %}
-
-        <p>
-            <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ chr }}:{{ start }}-{{ end }}" target="_blank">
-                View in UCSC Genome Browser
-            </a>
-        </p>
-
-        <p><a href="/">← Search again</a></p>
-    </body>
-</html>
+{% if genes %}
+<table border="1" style="border-collapse: collapse; width: 100%; margin-top: 1em;">
+  <thead>
+    <tr>
+      <th>Gene ID</th>
+      <th>Gene Name</th>
+      <th>FlyBase</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in genes %}
+    <tr>
+      <td>{{ g[0] }}</td>
+      <td>{{ g[1] }}</td>
+      <td>
+        <a href="https://flybase.org/reports/{{ g[0] }}" target="_blank">View</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No genes found for that enhancer.</p>
+{% endif %}
