@@ -14,8 +14,8 @@ e.tbs AS TotalBindingSites
 FROM Genes g
 JOIN Associations a ON g.gid = a.gid
 JOIN Enhancers e ON a.eid = e.eid
-WHERE g.symbol = 'CG14626' # Input is gene symbol
-AND a.activity >= 500; # activity score filter
+WHERE g.symbol = 'CG14626' 
+AND a.activity >= 500; 
 
 SELECT 
 e.eid AS EnhancerID,
@@ -31,8 +31,8 @@ e.tbs AS TotalBindingSites
 FROM Genes g
 JOIN Associations a ON g.gid = a.gid
 JOIN Enhancers e ON a.eid = e.eid
-WHERE g.geneid = 'FBgn0000667' # Input is FB gene id
-AND a.activity >= 500; # activity score filter
+WHERE g.geneid = 'FBgn0000667'
+AND a.activity >= 500;
 
 SELECT 
 g.symbol AS GeneSymbol,
@@ -44,6 +44,7 @@ g.time_cluster AS TimeCluster
 FROM Enhancers e
 JOIN Associations a ON e.eid = a.eid
 JOIN Genes g ON a.gid = g.gid
-WHERE e.chromosome = 'X' # Chr input
-AND e.start >= 1052748 # start
-AND e.end <= 1573675; # end
+WHERE e.chromosome = 'X' 
+AND e.start >= 1052748 
+AND e.end <= 1573675; 
+

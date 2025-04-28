@@ -2,9 +2,16 @@
 <table border="1" style="border-collapse: collapse; width: 100%; margin-top: 1em;">
   <thead>
     <tr>
-      <th>Chromosome</th>
-      <th>Start</th>
-      <th>End</th>
+      <th>Enhancer ID</th>
+      <th>Enhancer Name</th>
+      <th>IMDvsCTRL_LogFC</th>
+      <th>Cells20EvsCTRL_LogFC</th>
+      <th>HKSMvs20E_LogFC</th>
+      <th>CoSTARR20EvsCTRL_LogFC</th>
+      <th>Activity Score</th>
+      <th>ExpCondition</th>
+      <th>TF Counts</th>
+      <th>Total Binding Sites</th>
       <th>UCSC View</th>
     </tr>
   </thead>
@@ -14,9 +21,15 @@
       <td>{{ e[0] }}</td>
       <td>{{ e[1] }}</td>
       <td>{{ e[2] }}</td>
+      <td>{{ e[3] }}</td>
+      <td>{{ e[4] }}</td>
+      <td>{{ e[5] }}</td>
+      <td>{{ e[6] }}</td>
+      <td>{{ e[7] }}</td>
+      <td>{{ e[8] }}</td>
+      <td>{{ e[9] }}</td>
       <td>
-        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&amp;position={{ e[0] }}:{{ e[1] }}-{{ e[2] }}"
-           target="_blank">View</a>
+        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&amp;position={{ e[10] }}:{{ e[11] }}-{{ e[12] }}" target="_blank">View</a>
       </td>
     </tr>
     {% endfor %}
