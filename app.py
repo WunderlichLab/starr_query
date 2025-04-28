@@ -68,9 +68,9 @@ def get_enhancers_by_range(chr, start, end):
             e.tbs AS TotalBindingSites
         FROM Enhancers e
         JOIN Associations a ON e.eid = a.eid
-        WHERE chromosome = %s
-          AND start >= %s
-          AND end <= %s
+        WHERE e.chromosome = %s
+          AND e.start >= %s
+          AND e.end <= %s
         """
 
         try:
@@ -187,93 +187,78 @@ def find_gene():
 
 @app.route('/submit_gene', methods=['POST'])
 def find_enhancer():
-    symbol = request.form.get("symbol", "").strip()
-    geneid = request.form.get("geneid", "").strip()
-    chr = request.form['chr']
-    start = int(request.form['start'])
-    end = int(request.form['end'])
-    activity_score = request.form.get("activity_score", type=float, default=0)
-    condition = request.form.get("condition", "").strip()
+    # 1) pull inputs
+    symbol    = request.form.get("symbol","").strip()
+    geneid    = request.form.get("geneid","").strip()
+    chrom     = request.form.get("chr","").strip()
+    start_str = request.form.get("start","").strip()
+    end_str   = request.form.get("end","").strip()
+    activity_score = int(request.form.get("activity_score", 500))
+    condition = request.form.get("condition","").strip().lower()
 
-    error_message = ""
-    all_enhancers = {}
+    # 2) detect modes
+    has_gene   = bool(symbol or geneid)
+    has_region = bool(chrom and start_str and end_str)
+
+    # 3) require at least one
+    if not (has_gene or has_region):
+        return render_template('find_enhancer_results.html',
+            enhancers=[],
+            chart_data=[["Activity Score"]],
+            error_message=(
+              "Please specify either a gene (symbol or gene_id) "
+              "or a chromosomal region (chr+start+end)."
+            )
+        )
+
+    # 4) fetch by gene
+    gene_enhancers = []
+    if has_gene:
+        gene_enhancers = get_enhancers_by_gene(
+            symbol or None, geneid or None, activity_score
+        )
+
+    # 5) fetch by region
+    region_enhancers = []
+    if has_region:
+        start = int(start_str); end = int(end_str)
+        region_enhancers = get_enhancers_by_range(chrom, start, end)
+
+    # 6) combine: inner‐join if both, else whichever list exists
+    if has_gene and has_region:
+        gene_eids   = {e[0] for e in gene_enhancers}
+        region_eids = {e[0] for e in region_enhancers}
+        keep = gene_eids & region_eids
+        final_list = [e for e in gene_enhancers if e[0] in keep]
+    elif has_gene:
+        final_list = gene_enhancers
+    else:
+        final_list = region_enhancers
+
+    # 7) (parse eid, filter by condition, build histogram data…)
     enhancers_parsed = []
-    histogram_scores = []
-
-    try:
-        if not (0 <= activity_score <= 1000):
-            error_message = "Activity score threshold must be between 0 and 1000."
-    except ValueError:
-        error_message = "Invalid activity score input."
-
-    if not ((symbol or geneid) or (chr and start is not None and end is not None)):
-        error_message = "You must enter either gene symbol/ID or a chromosome range to query enhancer data."
-
-    if error_message:
-        return render_template('find_enhancer_results.html', enhancers=[], chart_data=json.dumps([["Activity Score"]]), error_message=error_message)
-
-    if symbol or geneid:
-        gene_enhancers = get_enhancers_by_gene(symbol or None, geneid or None, activity_score=0)
-        for e in gene_enhancers:
-            chrom, start_pos, end_pos = parse_enhancer_name(e[1])
-            all_enhancers[e[0]] = {
-                "EnhancerID": e[0],
-                "EnhancerName": e[1],
-                "ActivityScore": e[6],
-                "ExpCondition": e[7],
-                "Chromosome": chrom,
-                "Start": int(start_pos),
-                "End": int(end_pos)
-            }
-
-    if chr and start is not None and end is not None:
-        region_enhancers = get_enhancers_by_range(chr, start, end)
-        region_eids = set(e[0] for e in region_enhancers)
-
-        if not all_enhancers:
-            for e in region_enhancers:
-                chrom, start_pos, end_pos = parse_enhancer_name(e[1])
-                all_enhancers[e[0]] = {
-                    "EnhancerID": e[0],
-                    "EnhancerName": e[1],
-                    "ActivityScore": e[6],
-                    "ExpCondition": e[7],
-                    "Chromosome": chrom,
-                    "Start": int(start_pos),
-                    "End": int(end_pos)
-                }
-        else: # Take the inner join from both filters
-            all_enhancers = {eid: data for eid, data in all_enhancers.items() if eid in region_eids}
-
-    if not all_enhancers:
-        return render_template('find_enhancer_results.html', enhancers=[], chart_data=json.dumps([["Activity Score"]]), error_message="No enhancers found matching criteria.")
-
-    for eid, data in all_enhancers.items():
-        score = data.get("ActivityScore")
-        exp_condition = data.get("ExpCondition", "")
-
-        if score is not None and score < activity_score:
-            continue
-        if condition:
-            if not exp_condition or exp_condition.lower() != condition.lower():
-                continue
-
-        enhancers_parsed.append(data)
-
-        if condition and score is not None:
-            histogram_scores.append([float(score)])
+    for e in final_list:
+        chrom, start_str, end_str = parse_enhancer_name(e[1])
+        enhancers_parsed.append({
+            "EnhancerID":      e[0],
+            "EnhancerName":    e[1],
+            "ActivityScore":   e[6],
+            "ExpCondition":    e[7],
+            "Chromosome":      chrom,
+            "Start":           int(start_str),
+            "End":             int(end_str),
+        })
 
     chart_data = [["Activity Score"]]
-    if condition and histogram_scores:
-        chart_data += histogram_scores
+    for rec in enhancers_parsed:
+        chart_data.append([ rec["ActivityScore"] ])
 
     return render_template(
         'find_enhancer_results.html',
         enhancers=enhancers_parsed,
-        chart_data=json.dumps(chart_data),
+        chart_data=chart_data,
         error_message=""
     )
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=5002)
