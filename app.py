@@ -10,8 +10,8 @@ def connect_db():
     #connect to database on host
     connection = mariadb.connect(
         host = "bioed-new.bu.edu",
-        user = "yuki",
-        password = "yukiito914",
+        user = "garytwu",
+        password = "cinderella",
         database = "Team9",
         port = 4253
     )
@@ -45,6 +45,46 @@ def get_genes_by_enhancer(chr, start, end):
 
     except mariadb.Error as e:
         # error handling for connection
+        print(f"Error connecting to the database: {e}")
+        return []
+
+def get_enhancers_by_range(chr, start, end):
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+
+        query = """
+        SELECT 
+            e.eid AS EnhancerID,
+            e.name AS EnhancerName,
+            a.imd_vs_ctrl AS IMDvsCTRL_LogFC,
+            a.cells_20e_vs_ctrl AS Cells20EvsCTRL_LogFC,
+            a.hksm_vs_20e AS HKSMvs20E_LogFC,
+            a.costarr_20e_vs_ctrl AS CoSTARR20EvsCTRL_LogFC,
+            a.activity AS ActivityScore,
+            a.exp_condition AS ExpCondition,
+            e.tf_counts AS TFCounts,
+            e.tbs AS TotalBindingSites,
+        FROM Enhancers e
+        JOIN Associations a ON e.eid = a.eid
+        WHERE chromosome = %s
+          AND start >= %s
+          AND end <= %s
+        """
+
+        try:
+            cursor.execute(query, (chr, start, end))
+            result = cursor.fetchall()
+
+        except mariadb.Error as e:
+            # error handling for query execution
+            print(f"Error executing query: {e}")
+            result = []  # return an empty list if there is an error
+
+        conn.close()
+        return result
+
+    except mariadb.Error as e:
         print(f"Error connecting to the database: {e}")
         return []
 
@@ -100,6 +140,25 @@ def get_enhancers_by_gene(symbol=None, geneid=None, activity_score=500):
         print(f"Error connecting to the database: {e}")
         return []
 
+def get_gene_symbol_by_geneid(geneid):
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+
+        query = "SELECT symbol FROM Genes WHERE gid = %s"
+        cursor.execute(query, (geneid,))
+        result = cursor.fetchone()
+
+        conn.close()
+        if result:
+            return result[0]  # symbol
+        else:
+            return None
+    except mariadb.Error as e:
+        print(f"Error fetching gene symbol: {e}")
+        return None
+
+
 def parse_enhancer_id(eid):
     # e.g. 2L:10426653-10427192(+)
     try:
@@ -127,23 +186,92 @@ def find_gene():
 
 @app.route('/submit_gene', methods=['POST'])
 def find_enhancer():
-    symbol = request.form.get('symbol')
-    geneid = request.form.get('geneid')
-    activity_score = request.form.get('activity_score')
+    symbol = request.form.get("symbol", "").strip()
+    geneid = request.form.get("geneid", "").strip()
+    chr = request.form['chr']
+    start = int(request.form['start'])
+    end = int(request.form['end'])
+    activity_score = request.form.get("activity_score", type=float, default=0)
+    condition = request.form.get("condition", "").strip()
 
-    if activity_score is None or activity_score == "":
-        activity_score = 500  # default value
-    else:
-        activity_score = int(activity_score)
-
-    enhancers = get_enhancers_by_gene(symbol, geneid, activity_score)
-
+    error_message = ""
+    all_enhancers = {}
     enhancers_parsed = []
-    for e in enhancers:
-        chrom, start, end = parse_enhancer_id(e[0])  # e[0] = eid
-        enhancers_parsed.append(e + (chrom, start, end))
+    histogram_scores = []
 
-    return render_template('find_enhancer_results.html', enhancers=enhancers_parsed)
+    try:
+        if not (0 <= activity_score_threshold <= 1000):
+            error_message = "Activity score threshold must be between 0 and 1000."
+    except ValueError:
+        error_message = "Invalid activity score input."
+
+    if not ((gene_symbol or gene_id) or (chr and start is not None and end is not None)):
+        error_message = "You must enter either gene symbol/ID or a chromosome range to query enhancer data."
+
+    if error_message:
+        return render_template('find_enhancer_results.html', enhancers=[], chart_data=json.dumps([["Activity Score"]]), error_message=error_message)
+
+    if symbol or geneid:
+        gene_enhancers = get_enhancers_by_gene(symbol or None, geneid or None, activity_score=0)
+        for e in gene_enhancers:
+            chrom, start_pos, end_pos = parse_enhancer_name(e[1])
+            all_enhancers[e[0]] = {
+                "EnhancerID": e[0],
+                "EnhancerName": e[1],
+                "ActivityScore": e[6],
+                "ExpCondition": e[7],
+                "Chromosome": chrom,
+                "Start": int(start_pos),
+                "End": int(end_pos)
+            }
+
+    if chr and start is not None and end is not None:
+        region_enhancers = get_enhancers_by_range(chr, start, end)
+        region_eids = set(e[0] for e in region_enhancers)
+
+        if not all_enhancers:
+            for e in region_enhancers:
+                chrom, start_pos, end_pos = parse_enhancer_name(e[1])
+                all_enhancers[e[0]] = {
+                    "EnhancerID": e[0],
+                    "EnhancerName": e[1],
+                    "ActivityScore": e[6],
+                    "ExpCondition": e[7],
+                    "Chromosome": chrom,
+                    "Start": int(start_pos),
+                    "End": int(end_pos)
+                }
+        else: # Take the inner join from both filters
+            all_enhancers = {eid: data for eid, data in all_enhancers.items() if eid in region_eids}
+
+    if not all_enhancers:
+        return render_template('find_enhancer_results.html', enhancers=[], chart_data=json.dumps([["Activity Score"]]), error_message="No enhancers found matching criteria.")
+
+    for eid, data in all_enhancers.items():
+        score = data.get("ActivityScore")
+        exp_condition = data.get("ExpCondition", "")
+
+        if score is not None and score < activity_score_threshold:
+            continue
+        if condition:
+            if not exp_condition or exp_condition.lower() != condition.lower():
+                continue
+
+        enhancers_parsed.append(data)
+
+        if condition and score is not None:
+            histogram_scores.append([float(score)])
+
+    chart_data = [["Activity Score"]]
+    if condition and histogram_scores:
+        chart_data += histogram_scores
+
+    return render_template(
+        'find_enhancer_results.html',
+        enhancers=enhancers_parsed,
+        chart_data=json.dumps(chart_data),
+        error_message=""
+    )
 
 
 if __name__ == '__main__':
