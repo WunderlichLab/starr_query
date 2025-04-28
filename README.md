@@ -1,4 +1,4 @@
-# starr_query
+# Large-scale Enhancer Screen Database
 
 This project aims to develop a database to systematically capture and query data from a large-scale enhancer screen.   
 
