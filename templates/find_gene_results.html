@@ -2,8 +2,12 @@
 <table border="1" style="border-collapse: collapse; width: 100%; margin-top: 1em;">
   <thead>
     <tr>
-      <th>Gene ID</th>
-      <th>Gene Name</th>
+      <th>Gene Symbol</th>
+      <th>Enhancer ID</th>
+      <th>Gene Start</th>
+      <th>Gene End</th>
+      <th>Immune Process</th>
+      <th>Time Cluster</th>
       <th>FlyBase</th>
     </tr>
   </thead>
@@ -12,8 +16,12 @@
     <tr>
       <td>{{ g[0] }}</td>
       <td>{{ g[1] }}</td>
+      <td>{{ g[2] }}</td>
+      <td>{{ g[3] }}</td>
+      <td>{{ g[4] }}</td>
+      <td>{{ g[5] }}</td>
       <td>
-        <a href="https://flybase.org/reports/{{ g[0] }}" target="_blank">View</a>
+        <a href="https://flybase.org/reports/{{ g[0] }}" target="_blank">{{ g[0] }}</a>
       </td>
     </tr>
     {% endfor %}

@@ -45,7 +45,7 @@
                         <option value="Y">Y</option>
                     </select>
                 </label>
-                
+
                 <!-- input box for enhancer start coordinate -->
                 <label>
                     Start:
@@ -73,10 +73,16 @@
 
             <form id="gene-form" name="gene_form" action="/submit_gene" method="POST">
 
-            <label>Gene Name:
+            <label>Gene Symbol:
+                <input type="text" id="symbol" name="symbol">
+            </label>
 
-                <input type="text" id="gene_query" name="gene_query">
+            <label>Gene ID:
+                <input type="text" id="geneid" name="geneid">
+            </label>
 
+            <label>Activity Score:
+                <input type="number" id="activity_score" name="activity_score" value="500">
             </label>
 
             <button type="submit">Submit</button>
