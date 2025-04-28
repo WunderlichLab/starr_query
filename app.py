@@ -23,7 +23,7 @@ def get_genes_by_enhancer(chr, start, end):
         cursor = conn.cursor()
 
         query = """
-        SELECT g.symbol AS GeneSymbol, e.name AS EnhancerID, g.start AS GeneStart, g.end AS GeneEnd, g.immune_process AS ImmuneProcess, g.time_cluster AS TimeCluster
+        SELECT g.symbol AS GeneSymbol, g.geneid AS GeneID, e.name AS EnhancerID, g.start AS GeneStart, g.end AS GeneEnd, g.immune_process AS ImmuneProcess, g.time_cluster AS TimeCluster
         FROM Enhancers e
         JOIN Associations a ON e.eid = a.eid
         JOIN Genes g ON a.gid = g.gid
@@ -275,4 +275,4 @@ def find_enhancer():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
