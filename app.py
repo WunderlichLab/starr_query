@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 from flask import Flask, render_template, request
-from datetime import datetime, date
+import json
 import mariadb
+from flask import jsonify
 
 app = Flask(__name__)
 
@@ -159,7 +160,7 @@ def get_gene_symbol_by_geneid(geneid):
         return None
 
 
-def parse_enhancer_id(eid):
+def parse_enhancer_name(eid):
     # e.g. 2L:10426653-10427192(+)
     try:
         chrom_part, rest = eid.split(':')
@@ -200,12 +201,12 @@ def find_enhancer():
     histogram_scores = []
 
     try:
-        if not (0 <= activity_score_threshold <= 1000):
+        if not (0 <= activity_score <= 1000):
             error_message = "Activity score threshold must be between 0 and 1000."
     except ValueError:
         error_message = "Invalid activity score input."
 
-    if not ((gene_symbol or gene_id) or (chr and start is not None and end is not None)):
+    if not ((symbol or geneid) or (chr and start is not None and end is not None)):
         error_message = "You must enter either gene symbol/ID or a chromosome range to query enhancer data."
 
     if error_message:
@@ -251,7 +252,7 @@ def find_enhancer():
         score = data.get("ActivityScore")
         exp_condition = data.get("ExpCondition", "")
 
-        if score is not None and score < activity_score_threshold:
+        if score is not None and score < activity_score:
             continue
         if condition:
             if not exp_condition or exp_condition.lower() != condition.lower():
