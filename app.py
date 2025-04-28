@@ -64,7 +64,7 @@ def get_enhancers_by_range(chr, start, end):
             a.activity AS ActivityScore,
             a.exp_condition AS ExpCondition,
             e.tf_counts AS TFCounts,
-            e.tbs AS TotalBindingSites,
+            e.tbs AS TotalBindingSites
         FROM Enhancers e
         JOIN Associations a ON e.eid = a.eid
         WHERE chromosome = %s
@@ -105,7 +105,7 @@ def get_enhancers_by_gene(symbol=None, geneid=None, activity_score=500):
             a.activity AS ActivityScore,
             a.exp_condition AS ExpCondition,
             e.tf_counts AS TFCounts,
-            e.tbs AS TotalBindingSites,
+            e.tbs AS TotalBindingSites
         FROM Genes g
         JOIN Associations a ON g.gid = a.gid
         JOIN Enhancers e ON a.eid = e.eid

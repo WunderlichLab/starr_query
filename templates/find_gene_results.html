@@ -1,5 +1,6 @@
 {% if genes %}
-<table border="1" style="border-collapse: collapse; width: 100%; margin-top: 1em;">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<table id="geneTable" class="display" style="width:100%; margin-top: 1em;">
   <thead>
     <tr>
       <th>Gene Symbol</th>
@@ -8,7 +9,6 @@
       <th>Gene End</th>
       <th>Immune Process</th>
       <th>Time Cluster</th>
-      <th>FlyBase</th>
     </tr>
   </thead>
   <tbody>
@@ -20,13 +20,21 @@
       <td>{{ g[3] }}</td>
       <td>{{ g[4] }}</td>
       <td>{{ g[5] }}</td>
-      <td>
-        <a href="https://flybase.org/reports/{{ g[0] }}" target="_blank">{{ g[0] }}</a>
-      </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#geneTable').DataTable({
+        "pageLength": 25,
+        "lengthMenu": [10, 25, 50, 100]
+    });
+});
+</script>
+
 {% else %}
-<p>No genes found for that enhancer.</p>
+<p>No genes found for that enhancer region.</p>
 {% endif %}
