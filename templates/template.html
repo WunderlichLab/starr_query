@@ -3,27 +3,31 @@
     <head>
         <title>Large-scale Enhancer Screen Database</title>
 
+        <!-- Your custom CSS -->
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='design.css') }}">
+
+        <!-- DataTables core CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+        <!-- Buttons extension CSS -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
     </head>
+
     <body>
 
-        <!-- tab -->
+        <!-- Tabs -->
         <div class="tabs">
-            <div class="tab active" data-target="#introduction">
-                <b>Introduction</b>
-            </div>
-            <div class="tab" data-target="#enhancer-search">
-                <b>Enhancer→Gene</b>
-            </div>
-            <div class="tab" data-target="#gene-search">
-                <b>Gene→Enhancer</b>
-            </div>
+
+            <div class="tab active" data-target="#introduction"><b>Introduction</b></div>
+            <div class="tab"        data-target="#enhancer-search"><b>Enhancer→Gene</b></div>
+            <div class="tab"        data-target="#gene-search"><b>Gene→Enhancer</b></div>
+
         </div>
 
         <h1 id="title">Large-scale Enhancer Screen Database</h1>
 
         <!-- Introduction -->
-        <div id="introduction" class="tab-content active">
+        <div id="introduction" class="tab-content active">         
             <p id="description">
                 This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq datasets from <i>Drosophila melanogaster</i>. It helps explore how enhancers regulate gene expression across different experimental conditions.
             </p>
@@ -52,7 +56,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- Enhancer→Gene -->
         <div id="enhancer-search" class="tab-content">
@@ -95,122 +98,158 @@
 
         <!-- Gene→Enhancer -->
         <div id="gene-search" class="tab-content">
+            <h4>
+            Enter a gene (symbol eg “Abd-B” or ID eg “FBgn0000119”) or a chromosomal
+            region (e.g. 2L, start: 10426653, end: 10427192)
+            </h4>
+            <form id="gene-form" action="/submit_gene" method="POST">
+            <div style="display:flex; gap:2rem; margin-bottom:1rem;">
+                <label>Gene Symbol:<br><input type="text" name="symbol"></label>
+                <span style="align-self:center;font-weight:bold;">or</span>
+                <label>Gene ID:<br><input type="text" name="geneid"></label>
+                <span style="align-self:center;font-weight:bold;">or</span>
+                <label>
+                Chromosomal Location:<br>
+                <select name="chr">
+                    <option value="">--</option>
+                    <option value="2L">2L</option>
+                    <option value="2R">2R</option>
+                    <option value="3L">3L</option>
+                    <option value="3R">3R</option>
+                    <option value="4">4</option>
+                    <option value="X">X</option>
+                    <option value="Y">Y</option>
+                </select>
+                Start: <input type="number" name="start" style="width:80px;">
+                End:   <input type="number" name="end"   style="width:80px;">
+                </label>
+            </div>
 
-            <h4>Please enter a gene of interest, either symbol (eg, Abd-B) or gene ID (eg. FBgn0000119), or chromosomal region (e.g. 2L, start: 10426653, end: 10427192)</h4>
+            <div style="margin-bottom:1rem;">
+                <label>
+                Activity Score Threshold:
+                <input type="number" name="activity_score" value="500" min="0" max="1000">
+                </label>
+                <label style="margin-left:2rem;">
+                Condition:
+                <select name="condition">
+                    <option value="">-- All --</option>
+                    <option value="Control">Control</option>
+                    <option value="HKSM">HKSM</option>
+                    <option value="E20">E20</option>
+                </select>
+                </label>
+            </div>
 
-            <form id="gene-form" name="gene_form" action="/submit_gene" method="POST">
-
-                <!-- Input Row: Symbol, ID, Chromosome -->
-                <div style="display: flex; align-items: center; gap: 100px; margin-bottom: 10px;">
-                    <div>
-                        <label>Gene Symbol:<br>
-                            <input type="text" id="symbol" name="symbol">
-                        </label>
-                    </div>
-
-                    <div style="display: flex; align-items: center; height: 100%;">
-                        <span style="font-weight: bold;">or</span>
-                    </div>
-
-                    <div>
-                        <label>Gene ID:<br>
-                            <input type="text" id="geneid" name="geneid">
-                        </label>
-                    </div>
-
-                    <div style="display: flex; align-items: center; height: 100%;">
-                        <span style="font-weight: bold;">or</span>
-                    </div>
-
-                    <div>
-                        <label>Chromosomal Location:<br>
-                            <select name="chr" id="chr">
-                                <option value="">--</option>
-                                <option value="2L">2L</option>
-                                <option value="2R">2R</option>
-                                <option value="3L">3L</option>
-                                <option value="3R">3R</option>
-                                <option value="4">4</option>
-                                <option value="X">X</option>
-                                <option value="Y">Y</option>
-                            </select>
-                            Start: <input type="number" id="start" name="start" style="width: 80px;">
-                            End: <input type="number" id="end" name="end" style="width: 80px;">
-                        </label>
-                    </div>
-                </div>
-
-
-                <!-- Filters Row -->
-                <div>
-                    <p><b>Optional Filters</b></p>
-                    <div style="margin-bottom: 1rem;">
-                    <label>
-                        Activity Score Threshold:
-                        <input type="number" id="activity_score" name="activity_score" value="500" min="0" max="1000">
-                    </label>
-
-                    <label style="margin-left: 2rem;">
-                        Condition:
-                        <select name="condition" id="condition">
-                            <option value="">-- All --</option>
-                            <option value="Control">Control</option>
-                            <option value="HKSM">HKSM</option>
-                            <option value="E20">E20</option>
-                        </select>
-                    </label>
-                </div>
-                </div>
-
-                <button type="submit">Submit</button>
+            <button type="submit">Submit</button>
+            
             </form>
-
-
-            <!-- results will be displayed here -->
             <div id="gene-results"></div>
-
         </div>
 
-        <!-- load the jQuery library -->
+        <!-- JS Libraries & Custom Script (in correct order) -->
+        <!-- 1. jQuery -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <!-- 2. DataTables core -->
+        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+        <!-- 3. Buttons extension -->
+        <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+        <!-- 4. CSV/Excel dependencies -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <!-- 5. Google Charts loader -->
+        <script src="https://www.gstatic.com/charts/loader.js"></script>
 
+        <!-- 6. Custom initialization -->
         <script>
-            // Switching tabs
-            $('.tab').click(function(){
-                var tgt = $(this).data('target');
+            // Load Google Charts once
+            google.charts.load('current',{packages:['corechart']});
 
-                // tab active
+            // Histogram drawing
+            function drawEnhancerChart() {
+            const c = document.getElementById('activity_chart');
+            if (!c) return;
+            const dataArr = JSON.parse(c.dataset.chart);
+            google.charts.setOnLoadCallback(() => {
+                const data = google.visualization.arrayToDataTable(dataArr);
+                const chart = new google.visualization.Histogram(c);
+                chart.draw(data, {
+                title:      'Enhancer Activity Score Distribution',
+                legend:     { position: 'none' },
+                histogram:  { bucketSize: 50 },
+                hAxis:      { title: 'Activity Score' },
+                vAxis:      { title: 'Frequency' }
+                });
+            });
+            }
+
+            // DOM ready
+            $(function(){
+            // Tab switching
+            $('.tab').click(function(){
                 $('.tab').removeClass('active');
                 $(this).addClass('active');
-
-                // contents active
                 $('.tab-content').removeClass('active');
-                $(tgt).addClass('active');
+                $($(this).data('target')).addClass('active');
             });
 
-            // enhancer→Gene（AJAX）
-            $('#enhancer-form').on('submit', function(e){
+            // Enhancer→Gene AJAX + geneTable DataTable
+            $('#enhancer-form').submit(function(e){
                 e.preventDefault();
-                $.post(
-                '/submit_enhancer',
-                $(this).serialize()
-                ).done(function(html){
+                $.post('/submit_enhancer', $(this).serialize())
+                .done(html => {
                 $('#enhancer-results').html(html);
+
+                if ($.fn.DataTable.isDataTable('#geneTable')) {
+                    $('#geneTable').DataTable().destroy();
+                }
+                $('#geneTable').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [
+                    'csvHtml5',
+                    { extend:'csvHtml5', text:'TSV', fieldSeparator:'\t', extension:'.tsv', bom:true },
+                    'excelHtml5',
+                    ],
+                    pageLength: 25,
+                    lengthMenu: [10,25,50,100],
+                    order: [[0,'asc']]
+                });
                 });
             });
 
-            // gene→enhancer（AJAX）
-            $('#gene-form').on('submit', function(e){
+            // Gene→Enhancer AJAX + enhancerTable DataTable + Chart
+            $('#gene-form').submit(function(e){
                 e.preventDefault();
-                $.post(
-                '/submit_gene',
-                $(this).serialize()
-                ).done(function(html){
+                $.post('/submit_gene', $(this).serialize())
+                .done(html => {
                 $('#gene-results').html(html);
+
+                if ($.fn.DataTable.isDataTable('#enhancerTable')) {
+                    $('#enhancerTable').DataTable().destroy();
+                }
+                $('#enhancerTable').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [
+                    'csvHtml5',
+                    { extend:'csvHtml5', text:'TSV', fieldSeparator:'\t', extension:'.tsv', bom:true },
+                    'excelHtml5',
+                    ],
+                    pageLength: 25,
+                    lengthMenu: [10,25,50,100],
+                    order: [[2,'desc']]
                 });
+
+                drawEnhancerChart();
+                })
+                .fail(() => {
+                alert('Search failed. Please try again.');
+                });
+            });
             });
 
         </script>
-
     </body>
 </html>
