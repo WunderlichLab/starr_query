@@ -1,8 +1,5 @@
 {% if enhancers %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='design.css') }}">
-
-<table id="enhancerTable" class="display" style="width:100%; margin-top: 1em;">
+<table id="enhancerTable" class="display" style="width:100%; margin-top:1em;">
   <thead>
     <tr>
       <th>Enhancer ID</th>
@@ -27,7 +24,8 @@
       <td>{{ e.End }}</td>
       <td>
         {% if e.Chromosome and e.Start and e.End %}
-        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.Chromosome }}:{{ e.Start }}-{{ e.End }}" target="_blank">View</a>
+        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.Chromosome }}:{{ e.Start }}-{{ e.End }}"
+           target="_blank">View</a>
         {% else %}
         N/A
         {% endif %}
@@ -37,40 +35,11 @@
   </tbody>
 </table>
 
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#enhancerTable').DataTable({
-        "pageLength": 25,
-        "lengthMenu": [10, 25, 50, 100],
-        "order": [[2, "desc"]]  // default sort by Activity Score
-    });
-});
-</script>
-
 {% if chart_data and chart_data|length > 1 %}
-<div id="activity_chart" style="width: 900px; height: 500px; margin-top: 2em;"></div>
-
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript">
-    google.charts.load('current', {packages: ['corechart']});
-    google.charts.setOnLoadCallback(drawChart);
-
-    function drawChart() {
-        var data = google.visualization.arrayToDataTable({{ chart_data | safe }});
-
-        var options = {
-            title: 'Enhancer Activity Score Distribution',
-            legend: { position: 'none' },
-            histogram: { bucketSize: 50 },
-            hAxis: { title: 'Activity Score', minValue: {{ request.form.get('activity_score', 0) }} },
-            vAxis: { title: 'Frequency' }
-        };
-
-        var chart = new google.visualization.Histogram(document.getElementById('activity_chart'));
-        chart.draw(data, options);
-    }
-</script>
+<div id="activity_chart"
+     data-chart='{{ chart_data|tojson }}'
+     style="width:900px; height:500px; margin-top:2em;">
+</div>
 {% endif %}
 
 {% else %}

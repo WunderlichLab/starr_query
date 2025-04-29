@@ -95,3 +95,31 @@ tr:hover {
     padding: 15px;
     border-radius: 8px;
 }
+
+div.dt-buttons::before {
+    content: 'Download:';
+    font-weight: bold;
+    margin-right: 0.5em;      
+    display: inline-block;    
+    vertical-align: middle;   
+  }
+
+.dt-button {
+    padding: 4px 8px !important;    /* 4px top/bottom, 8px left/right */
+    font-size: 0.8rem !important;      /* same base font-size */
+    line-height: 1.2 !important;
+  }
+  
+  /* Add a small horizontal gap between each button */
+  .dt-button:not(:last-child) {
+    margin-right: 0.5em !important;
+  }
+  
+  /* Make the button group inline with the form and add spacing */
+  div.dt-buttons {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: 1em;    /* space below the form */
+    margin-left: 1em;     /* gap to the left of the buttons */
+    margin-bottom: 0.2em;   /* space above the table */
+  }
