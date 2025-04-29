@@ -3,35 +3,61 @@
     <head>
         <title>Large-scale Enhancer Screen Database</title>
 
-        <style>
-            /* CSS for the tab */
-            .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 1em; }
-            .tab { padding: 0.5em 1em; cursor: pointer; }
-            .tab.active { font-weight: bold; border-bottom: 2px solid #000; }
-            /* Switching tabs */
-            .tab-content { display: none; }
-            .tab-content.active { display: block; }
-        </style>
-
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='design.css') }}">
     </head>
     <body>
 
         <!-- tab -->
         <div class="tabs">
-            <div class="tab active" data-target="#enhancer-search">Enhancer→Gene</div>
-            <div class="tab"        data-target="#gene-search">Gene→Enhancer</div>
+            <div class="tab active" data-target="#introduction">
+                <b>Introduction</b>
+            </div>
+            <div class="tab" data-target="#enhancer-search">
+                <b>Enhancer→Gene</b>
+            </div>
+            <div class="tab" data-target="#gene-search">
+                <b>Gene→Enhancer</b>
+            </div>
         </div>
 
         <h1 id="title">Large-scale Enhancer Screen Database</h1>
 
-        <p id="description">This serves as the Wunderlich Lab's dynamic web platform for querying and visualizing enhancer–gene associations. The current scope of the database incorporates STARR-seq datasets of <i>drosophila melanogaster</i> with the goal of understanding enhancer-regulated developmental gene expression and common motifs. You are encouraged to search by enhancer region or specific genes, filter by experimental condition and activity score, and explore results through interactive tables and histogram visualizations.</p>
+        <!-- Introduction -->
+        <div id="introduction" class="tab-content active">
+            <p id="description">
+                This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq datasets from <i>Drosophila melanogaster</i>. It helps explore how enhancers regulate gene expression across different experimental conditions.
+            </p>
+
+            <ul>
+                <li>Search by enhancer region or gene symbol/ID</li>
+                <li>Filter results by activity score or experimental condition</li>
+                <li>View results in interactive tables and histograms</li>
+            </ul>
+
+            <div class="info-boxes">
+                <div class="info-box">
+                    <h4>Enhancer → Gene</h4>
+                    <p>
+                        <b>Input:</b> Chromosome, Start, End <br><br>
+                        <b>Output:</b> A table of all genes linked to enhancers in the specified region. Includes gene symbol, enhancer ID, associated ORF, immune process, time cluster, and other annotations.
+                    </p>
+                </div>
+                <div class="info-box">
+                    <h4>Gene → Enhancer</h4>
+                    <p>
+                        <b>Input:</b> One of the following: gene symbol, gene ID, or chromosomal region (chromosome, start, end). <br><br>
+                        <i>Optional filters:</i> activity score threshold, experimental condition.<br><br>
+                        <b>Output:</b> A table of associated enhancers with scores and annotations. If one condition is selected, a histogram of enhancer activity scores is also shown.
+                    </p>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Enhancer→Gene -->
-        <div id="enhancer-search" class="tab-content active">
+        <div id="enhancer-search" class="tab-content">
 
-            <h4>You are using the enhancer-to-gene-search function. Please specify the chromosomal region that contains your enhancer(s) of interest (e.g. 2L, start: 10426653, end: 10427192).</h4>
-            <h4>Once you press submit, all genes that are associated with enhancers located within the specified region will be displayed in table format (containing gene symbol, associated enhancer, ORF, immune process, time cluster, and supplementary information). </h4>
-
+            <h4>Please specify the chromosomal region that contains your enhancer(s) of interest (e.g. 2L, start: 10426653, end: 10427192).</h4>
             <!-- form -->
             <form id="enhancer-form" name="enhancer_form" action="/submit_enhancer" method="POST">
 
@@ -70,59 +96,75 @@
         <!-- Gene→Enhancer -->
         <div id="gene-search" class="tab-content">
 
-            <h4>You are using the enhancer-specific-search function. Please specify either a gene of interest (via symbol or gene_id), for which the associated enhancers will be identified. Alternatively, you may also specify the chromosomal region that contains your enhancer(s) of interest (e.g. 2L, start: 10426653, end: 10427192). If both information is supplied, only enhancers that pass both the genetic and locational filter will be displayed.</h4>
-
-            <h4>Once you press submit, all enhancers of interest will be presented in table format (containing enhancerID, enhancer name, experimental LogFC values, activity scores, total count of transcription factor binding sites, and list of motifs).</h4>
-
-            <h5> Additionally, you may filter for activity score (0-1000) and experimental condition (control, HKSM, 20E). If no experimental condition is specified, all data from the 3 experimental conditions will be displayed. If one particular experimental condition is specified, a histogram illustrating the distribution of activity scores that surpass the threshold will be displayed for the given experiment.</h5>
+            <h4>Please enter a gene of interest, either symbol (eg, Abd-B) or gene ID (eg. FBgn0000119), or chromosomal region (e.g. 2L, start: 10426653, end: 10427192)</h4>
 
             <form id="gene-form" name="gene_form" action="/submit_gene" method="POST">
-                
-                <label>Gene Symbol:
-                    <input type="text" id="symbol" name="symbol">
-                </label>
 
-                <label>Gene ID:
-                    <input type="text" id="geneid" name="geneid">
-                </label><br>
+                <!-- Input Row: Symbol, ID, Chromosome -->
+                <div style="display: flex; align-items: center; gap: 100px; margin-bottom: 10px;">
+                    <div>
+                        <label>Gene Symbol:<br>
+                            <input type="text" id="symbol" name="symbol">
+                        </label>
+                    </div>
 
-                <label>Chromosome:
-                    <select name="chr" id="chr">
-                        <option value="">--</option> <!-- allow blank -->
-                        <option value="2L">2L</option>
-                        <option value="2R">2R</option>
-                        <option value="3L">3L</option>
-                        <option value="3R">3R</option>
-                        <option value="4">4</option>
-                        <option value="X">X</option>
-                        <option value="Y">Y</option>
-                    </select>
-                </label>
+                    <div style="display: flex; align-items: center; height: 100%;">
+                        <span style="font-weight: bold;">or</span>
+                    </div>
 
-                <label>Start:
-                    <input type="number" id="start" name="start">
-                </label>
+                    <div>
+                        <label>Gene ID:<br>
+                            <input type="text" id="geneid" name="geneid">
+                        </label>
+                    </div>
 
-                <label>End:
-                    <input type="number" id="end" name="end">
-                </label><br>
+                    <div style="display: flex; align-items: center; height: 100%;">
+                        <span style="font-weight: bold;">or</span>
+                    </div>
 
-                <label>Activity Score Threshold:
-                    <input type="number" id="activity_score" name="activity_score" value="500" min="0" max="1000">
-                </label>
+                    <div>
+                        <label>Chromosomal Location:<br>
+                            <select name="chr" id="chr">
+                                <option value="">--</option>
+                                <option value="2L">2L</option>
+                                <option value="2R">2R</option>
+                                <option value="3L">3L</option>
+                                <option value="3R">3R</option>
+                                <option value="4">4</option>
+                                <option value="X">X</option>
+                                <option value="Y">Y</option>
+                            </select>
+                            Start: <input type="number" id="start" name="start" style="width: 80px;">
+                            End: <input type="number" id="end" name="end" style="width: 80px;">
+                        </label>
+                    </div>
+                </div>
 
-                <label>Condition:
-                    <select name="condition" id="condition">
-                        <option value="">-- All --</option>
-                        <option value="Control">Control</option>
-                        <option value="HKSM">HKSM</option>
-                        <option value="E20">E20</option>
-                    </select>
-                </label>
+
+                <!-- Filters Row -->
+                <div>
+                    <p><b>Optional Filters</b></p>
+                    <div style="margin-bottom: 1rem;">
+                    <label>
+                        Activity Score Threshold:
+                        <input type="number" id="activity_score" name="activity_score" value="500" min="0" max="1000">
+                    </label>
+
+                    <label style="margin-left: 2rem;">
+                        Condition:
+                        <select name="condition" id="condition">
+                            <option value="">-- All --</option>
+                            <option value="Control">Control</option>
+                            <option value="HKSM">HKSM</option>
+                            <option value="E20">E20</option>
+                        </select>
+                    </label>
+                </div>
+                </div>
 
                 <button type="submit">Submit</button>
-
             </form>
+
 
             <!-- results will be displayed here -->
             <div id="gene-results"></div>

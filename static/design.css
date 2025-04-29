@@ -1,0 +1,97 @@
+/* --- General Page Layout --- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f8f9;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+/* CSS for the tab */
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 1em; }
+
+.tab {
+    padding: 0.5em 1em;
+    cursor: pointer;
+}
+
+
+.tab.active {
+    font-weight: bold;
+    border-bottom: 2px solid #000;
+}
+
+/* Switching tabs */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --- Headings --- */
+h1 {
+    color: cadetblue;
+    font-size: 2.5em;
+    margin-bottom: 0.5em;
+}
+
+h2 {
+    color: #4c7e80;
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+
+h3 {
+    color: #396263;
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+h4 {
+    color: #2e494a;
+    font-size: 1em;
+    margin-bottom: 1em;
+}
+
+/* --- Table Styling --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 2em;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th {
+    background-color: cadetblue;
+    color: white;
+    text-align: left;
+    padding: 12px 15px;
+}
+
+td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #e0eeee;
+}
+
+.info-boxes {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.info-box {
+    flex: 1;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+}
