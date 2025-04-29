@@ -15,11 +15,4 @@ Integrating information regarding:
 - Transcription Factor Motifs
 - Enhancer Activity Scores
   
-Our database will incorporate this data to allow researchers easy access and retrieval toenhancer-gene interactions. It will be designed for supporting structured queries on enhancer activity, gene expression patterns, and motif enrichment.
-
-[![default](https://github.com/user-attachments/assets/41415d88-24b5-4616-b751-b9a19b9a6741)](https://s36063.pcdn.co/wp-content/uploads/2015/11/headshot_crop-1024x1024.jpg)
-[![default](https://github.com/user-attachments/assets/41415d88-24b5-4616-b751-b9a19b9a6741)](https://s36063.pcdn.co/wp-content/uploads/2015/11/headshot_crop-1024x1024.jpg)
-[![default](https://github.com/user-attachments/assets/41415d88-24b5-4616-b751-b9a19b9a6741)](https://s36063.pcdn.co/wp-content/uploads/2015/11/headshot_crop-1024x1024.jpg)
-[![default](https://github.com/user-attachments/assets/41415d88-24b5-4616-b751-b9a19b9a6741)](https://s36063.pcdn.co/wp-content/uploads/2015/11/headshot_crop-1024x1024.jpg)
-[![default](https://github.com/user-attachments/assets/41415d88-24b5-4616-b751-b9a19b9a6741)](https://s36063.pcdn.co/wp-content/uploads/2015/11/headshot_crop-1024x1024.jpg)
-[![default](https://github.com/user-attachments/assets/41415d88-24b5-4616-b751-b9a19b9a6741)](https://s36063.pcdn.co/wp-content/uploads/2015/11/headshot_crop-1024x1024.jpg)
+Our database will incorporate this data to allow researchers easy access and retrieval of enhancer-gene interactions. It will be designed for supporting structured queries on enhancer activity, gene expression patterns, and motif enrichment.
