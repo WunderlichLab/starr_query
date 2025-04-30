@@ -21,6 +21,7 @@
             <div class="tab active" data-target="#introduction"><b>Introduction</b></div>
             <div class="tab"        data-target="#enhancer-search"><b>Enhancer→Gene</b></div>
             <div class="tab"        data-target="#gene-search"><b>Gene→Enhancer</b></div>
+            <div class="tab"        data-target="#help-page"><b>Help Page</b></div>
 
         </div>
 
@@ -145,6 +146,49 @@
             
             </form>
             <div id="gene-results"></div>
+        </div>
+
+        <!-- Help Page -->
+        <div id="help-page" class="tab-content">
+            <h2>Help Page</h2>
+            <p>The Large-Scale Enhancer Screen Database contains STARR-seq data from the Wunderlich Lab measuring <i>Drosophila</i> enhancer activity and associated gene expression across different experimental conditions.</p>
+            <p>This database allows researchers to query for gene-enhancer associations and visualize enhancer activity to explore regulatory mechanisms in immune responses.</p>
+            <h3>About the Data:</h3>
+            <p>The database contains datasets from three different experimental conditions:</p>
+            <ul>
+                <li>Control</li>
+                <li>Hormone Treatment: 20E</li>
+                <li>Immune Treatment: Heat-killed <i>S. marcescens</i> (HKSM) also treated with 20E</li>
+            </ul>
+            <p>Each of these datasets contain the following fields:</p>
+            <ul>
+                <li>Genomic coordinates of consensus enhancer regions</li>
+                <li>Genes found within 15kb of enhancer regions</li>
+                <li>Gene expression changes (LogFC values) derived from RNA-seq experiments</li>
+                <ul>
+                    <li>2021 LogFC IMD vs Control</li>
+                    <li>coSTARR LogFC HKSM vs 20E</li>
+                    <li>coSTARR 20E vs Control</li>
+                    <li>Cells 20E vs Control</li>
+                </ul>
+                <li>Immune pathway annotations of genes</li>
+                <li>Time cluster of genes as classified by Schlamp et. al</li>
+                <li>Transcription factor motifs of enhancers</li>
+                <li>Total number of binding sites for each enhancer</li>
+                <li>Enhancer activity scores as measured by STARR-seq (currently ranges from 363 to 1000)</li>
+            </ul>
+            <h3>How to use:</h3>
+            <h4>Enhancer &rarr; Gene</h4>
+            <p>To search for genes associated with enhancer region, specify the chromosome using the drop down menu, enter enhancer start and end coordinates, and click submit This will display the Gene Symbol, FlyBase Gene ID, Enhancer ID, Gene Coordinates, Immune Process, Time Cluster, and a link to the FlyBase entry.</p>
+            <p>The table is sortable for each column and can be filtered for a particular string of letters or numbers; for example, gene symbols that contain "ln" or a specific time cluster or immune process.</p>
+            <p>The results are downloadable in CSV, TSV, and Excel (XLSX) format.</p>
+            <h4>Gene &rarr; Enhancer</h4>
+            <p>There are multiple ways to search for enhancer regions. Either enter a gene symbol, FlyBase gene ID, or chromosome coordinates, specifying the chromosome using the drop down menu. Then, choose the activity score threshold (filters out enhancers with activity scores less than this number) and choose an experimental condition using the drop down menu.</p>
+            <p>This will display the Enhancer Name, FlyBase Gene ID, Activity Score, Condition, Chromosome, Enhancer Coordinates, and link to UCSC View. Again, this table is sortable by each column and can be filtered by a search string of letters. The results can be downloaded in a CSV, TSV, or Excel (XLSX) format.</p>
+            <p>Additionally, this page visualizes enhancer activity score distribution in a histogram which can be helpful when searching for multiple enhancer regions.</p>
+            <h3>Acknowledgements</h3>
+            <p>This database was created for and with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianna Cohen for their support and hope that this website will be useful for the members of the Wunderlich Lab.</p>
+            <p>This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University facilitated by Dr. Gary Benson.</p>
         </div>
 
         <!-- JS Libraries & Custom Script (in correct order) -->
