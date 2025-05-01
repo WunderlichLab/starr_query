@@ -2,8 +2,8 @@
 <table id="enhancerTable" class="display" style="width:100%; margin-top:1em;">
   <thead>
     <tr>
-      <th>Enhancer ID</th>
       <th>Enhancer Name</th>
+      <th>Gene ID</th>
       <th>Activity Score</th>
       <th>Condition</th>
       <th>Chromosome</th>
@@ -15,8 +15,8 @@
   <tbody>
     {% for e in enhancers %}
     <tr>
-      <td>{{ e.EnhancerID }}</td>
       <td>{{ e.EnhancerName }}</td>
+      <td>{{ e.GeneID }}</td>
       <td>{{ e.ActivityScore }}</td>
       <td>{{ e.ExpCondition }}</td>
       <td>{{ e.Chromosome }}</td>
@@ -36,10 +36,7 @@
 </table>
 
 {% if chart_data and chart_data|length > 1 %}
-<div id="activity_chart"
-     data-chart='{{ chart_data|tojson }}'
-     style="width:900px; height:500px; margin-top:2em;">
-</div>
+<div id="activity_chart" data-chart='{{ chart_data|tojson }}' style="width:900px; height:500px; margin-top:2em;"></div>
 {% endif %}
 
 {% else %}

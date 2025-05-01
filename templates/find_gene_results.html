@@ -3,11 +3,15 @@
 <table id="geneTable" class="display" style="width:100%; margin-top:1em;">
   <thead>
     <tr>
-      <th>Gene Symbol</th>
+      <th>Gene <br>Symbol</th>
       <th>Gene ID</th>
       <th>Enhancer ID</th>
       <th>Gene Start</th>
       <th>Gene End</th>
+      <th>IMD vs CTRL_LogFC</th>
+      <th>Cells20E vs CTRL_LogFC</th>
+      <th>HKSM vs 20E_LogFC</th>
+      <th>CoSTARR20E vs CTRL_LogFC</th>
       <th>Immune Process</th>
       <th>Time Cluster</th>
       <th>FlyBase</th>
@@ -21,6 +25,10 @@
       <td>{{ g[2] }}</td>
       <td>{{ g[3] }}</td>
       <td>{{ g[4] }}</td>
+      <td>{{ g[7] }}</td>
+      <td>{{ g[8] }}</td>
+      <td>{{ g[9] }}</td>
+      <td>{{ g[10] }}</td>
       <td>{{ g[5] }}</td>
       <td>{{ g[6] }}</td>
       <td>

@@ -24,7 +24,18 @@ def get_genes_by_enhancer(chr, start, end):
         cursor = conn.cursor()
 
         query = """
-        SELECT g.symbol AS GeneSymbol, g.geneid AS GeneID, e.name AS EnhancerID, g.start AS GeneStart, g.end AS GeneEnd, g.immune_process AS ImmuneProcess, g.time_cluster AS TimeCluster
+        SELECT
+            g.symbol AS GeneSymbol,
+            g.geneid AS GeneID,
+            e.name AS EnhancerID,
+            g.start AS GeneStart,
+            g.end AS GeneEnd,
+            g.immune_process AS ImmuneProcess,
+            g.time_cluster AS TimeCluster,
+            a.imd_vs_ctrl AS IMDvsCTRL_LogFC,
+            a.cells_20e_vs_ctrl AS Cells20EvsCTRL_LogFC,
+            a.hksm_vs_20e AS HKSMvs20E_LogFC,
+            a.costarr_20e_vs_ctrl AS CoSTARR20EvsCTRL_LogFC
         FROM Enhancers e
         JOIN Associations a ON e.eid = a.eid
         JOIN Genes g ON a.gid = g.gid
@@ -55,7 +66,7 @@ def get_enhancers_by_range(chr, start, end):
         cursor = conn.cursor()
 
         query = """
-        SELECT 
+        SELECT
             e.eid AS EnhancerID,
             e.name AS EnhancerName,
             a.imd_vs_ctrl AS IMDvsCTRL_LogFC,
@@ -65,9 +76,11 @@ def get_enhancers_by_range(chr, start, end):
             a.activity AS ActivityScore,
             a.exp_condition AS ExpCondition,
             e.tf_counts AS TFCounts,
-            e.tbs AS TotalBindingSites
+            e.tbs AS TotalBindingSites,
+            g.geneid AS GeneID
         FROM Enhancers e
         JOIN Associations a ON e.eid = a.eid
+        JOIN Genes g ON a.gid = g.gid
         WHERE e.chromosome = %s
           AND e.start >= %s
           AND e.end <= %s
@@ -106,7 +119,8 @@ def get_enhancers_by_gene(symbol=None, geneid=None, activity_score=500):
             a.activity AS ActivityScore,
             a.exp_condition AS ExpCondition,
             e.tf_counts AS TFCounts,
-            e.tbs AS TotalBindingSites
+            e.tbs AS TotalBindingSite,
+            g.geneid AS GeneIDs
         FROM Genes g
         JOIN Associations a ON g.gid = a.gid
         JOIN Enhancers e ON a.eid = e.eid
@@ -173,7 +187,7 @@ def parse_enhancer_name(eid):
 
 
 @app.route('/')
-def home():
+def index():
     return render_template('template.html')
 
 @app.route('/submit_enhancer', methods=['POST'])
@@ -193,7 +207,7 @@ def find_enhancer():
     chrom     = request.form.get("chr","").strip()
     start_str = request.form.get("start","").strip()
     end_str   = request.form.get("end","").strip()
-    activity_score = int(request.form.get("activity_score", 500))
+    activity_score = float(request.form.get("activity_score", 500))
     condition = request.form.get("condition","").strip().lower()
 
     # 2) detect modes
@@ -239,26 +253,46 @@ def find_enhancer():
     enhancers_parsed = []
     for e in final_list:
         chrom, start_str, end_str = parse_enhancer_name(e[1])
-        enhancers_parsed.append({
-            "EnhancerID":      e[0],
-            "EnhancerName":    e[1],
-            "ActivityScore":   e[6],
-            "ExpCondition":    e[7],
-            "Chromosome":      chrom,
-            "Start":           int(start_str),
-            "End":             int(end_str),
-        })
 
-    chart_data = [["Activity Score"]]
+	# Check if activity is higher, otherwise skip
+        if e[6] < activity_score:
+                continue
+
+	# Display everything if no condition is set, othersise filter based on condition
+        if condition and e[7].strip().lower() != condition:
+                continue
+
+        enhancers_parsed.append({
+                "EnhancerName":    e[1],
+                "GeneID":          e[10],
+                "ActivityScore":   e[6],
+                "ExpCondition":    e[7],
+                "Chromosome":      chrom,
+                "Start":           int(start_str),
+                "End":             int(end_str),
+            })
+
+    unique_enhancers = []
+    seen = set()
+
+    for enhancer in enhancers_parsed:
+    # Convert dictionary to a tuple of items for hashing
+        enhancer_tuple = tuple(enhancer.items())
+        if enhancer_tuple not in seen:
+            seen.add(enhancer_tuple)
+            unique_enhancers.append(enhancer)
+
+    chart_data = [["Activity Score", "Enhancer Name", "Condition"]]
     for rec in enhancers_parsed:
-        chart_data.append([ rec["ActivityScore"] ])
+        for unique in {rec["EnhancerName"]} - {row[1] for row in chart_data[1:]}:
+            chart_data.append([rec["ActivityScore"], rec["EnhancerName"], rec["ExpCondition"]])
 
     return render_template(
         'find_enhancer_results.html',
-        enhancers=enhancers_parsed,
+        enhancers=unique_enhancers,
         chart_data=chart_data,
         error_message=""
     )
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True)
