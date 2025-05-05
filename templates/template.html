@@ -191,17 +191,17 @@
 		<li>Enhancer activity scores as measured by STARR-seq (currently ranges from 363 to 1000)</li> 
 	    </ul>
 	    <h3>How to use:</h3>
-	    <h4>Enhancer &rarr; Gene</h4>
+	    <h4 id="go-to-gene" style="cursor:pointer;">Enhancer &rarr; Gene</h4>
 	    <p>To search for genes associated with enhancer region, specify the chromosome using the drop down menu, enter enhancer start and end coordinates, and click submit. This will display the Gene Symbol, FlyBase Gene ID, Enhancer ID, Gene Coordinates, Immune Process, Time Cluster, and a link to the FlyBase entry.</p> 
 	    <p>The table is sortable for each column and can be filtered for a particular string of letters or numbers; for example, gene symbols that contain "ln" or a specific time cluster or immune process.</p>
  	    <p>The results are downloadable in CSV, TSV, and Excel (XLSX) format.
-            <h4>Gene &rarr; Enhancer</h4>
+        <h4 id="go-to-enhancer" style="cursor:pointer;">Gene &rarr; Enhancer</h4>
 	    <p>There are multiple ways to search for enhancer regions. Either enter a gene symbol, FlyBase gene ID, or chromsome coordinates, specifying the chromosome using the drop down menu. Then, choose the activity score threshold (filters out enhancers with activity scores less than this number) and choose an experimental condition using the drop down menu.</p>
-            <p>This will display the Enhancer Name, FlyBase Gene ID, Activity Score, Condition, Chromosome, Enhancer Coordinates, and link to UCSC View. Again, this table is sortable by each column and can be filtered by a search string of letters. The results can be downloaded in a CSV, TSV, or Excel (XLSX) format.</p>
-            <p>Additionally, this page visualizes enhancer activity score distribution in a histogram which can be helpful when searching for multiple enhancer regions.</p>
+        <p>This will display the Enhancer Name, FlyBase Gene ID, Activity Score, Condition, Chromosome, Enhancer Coordinates, and link to UCSC View. Again, this table is sortable by each column and can be filtered by a search string of letters. The results can be downloaded in a CSV, TSV, or Excel (XLSX) format.</p>
+        <p>Additionally, this page visualizes enhancer activity score distribution in a histogram which can be helpful when searching for multiple enhancer regions.</p>
 	    <h3>Acknowledgements</h3>
 	    <p>This database was created for and with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianne Cohen for their support and hope that this website will be useful for the members of the Wunderlich Lab.</p>
-            <p> This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University facilitated by Dr. Gary Benson.</p>
+        <p> This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University facilitated by Dr. Gary Benson.</p>
 	</div>	
 
         <!-- JS Libraries & Custom Script (in correct order) -->
@@ -343,6 +343,13 @@
                 $('.tab[data-target="#enhancer-search"]').click();
             });
             $('#geneToEnhancerBox').click(function() {
+                $('.tab[data-target="#gene-search"]').click();
+            });
+
+            $('#go-to-gene').click(function() {
+                $('.tab[data-target="#enhancer-search"]').click();
+            });
+            $('#go-to-enhancer').click(function() {
                 $('.tab[data-target="#gene-search"]').click();
             });
 
