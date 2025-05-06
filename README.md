@@ -15,11 +15,16 @@ Integrating information regarding:
 - Transcription Factor Motifs
 - Enhancer Activity Scores
   
-Our database will incorporate this data to allow researchers easy access and retrieval of enhancer-gene interactions. It will be designed for supporting structured queries on enhancer activity, gene expression patterns, and motif enrichment.
+Our database will incorporate this data to allow researchers easy access and retrieval of enhancer-gene interactions. It will be designed for supporting structured queries on enhancer activity, gene expression patterns, and motif enrichment.  
 
-![image](https://github.com/user-attachments/assets/0b7ecc7b-1f32-40c2-92e4-9479793bf318)
-![image](https://github.com/user-attachments/assets/ec8adb59-d639-4935-8b1b-eaae5a607792)
-![image](https://github.com/user-attachments/assets/7bc60d6e-80d7-4952-99f2-beafff0630cd)
-![image](https://github.com/user-attachments/assets/0b407ef6-3ac4-400b-bce4-e2e81cf69dba)
-![image](https://github.com/user-attachments/assets/5689cfa7-a6dd-47b3-a779-974328daa0f9)
+### Introduction tab
+![image](https://github.com/user-attachments/assets/28ec5be2-a0a7-4287-b354-9b02c9a56898)
+### Enhancer→Gene tab
+![image](https://github.com/user-attachments/assets/bde351e7-e686-4433-9ae9-dac4b1a35270)
+### Gene→Enhancer tab
+![image](https://github.com/user-attachments/assets/6b65a835-fc1a-4b1e-b40a-686bb5021f26)
+![image](https://github.com/user-attachments/assets/b1bccfbd-f94f-480b-8f28-1528bcc13cf4)
+### Help Page
+![image](https://github.com/user-attachments/assets/a451fdbb-7b68-48ad-8714-87050f4603d3)
+![image](https://github.com/user-attachments/assets/f9d1d473-31e1-4881-8288-45e4ebbb2103)
 
