@@ -17,6 +17,26 @@ Integrating information regarding:
   
 Our database will incorporate this data to allow researchers easy access and retrieval of enhancer-gene interactions. It will be designed for supporting structured queries on enhancer activity, gene expression patterns, and motif enrichment.  
 
+## Repo Structure
+
+```
+nextflow-template/
+├── app.py
+├── templates/
+│   ├── find_enhancer_results.html
+│   ├── fine_gene_results.html
+│   └── template.html
+├── templates/
+│   ├── images/
+    │   └── wunderlich_lab_clear.png
+│   └── design.css
+├── db_schema.sql
+├── 1_creating_files.ipynb
+├── create_tables.sql
+├── queries.sql
+└── README.md
+```
+
 ### Introduction tab
 ![image](https://github.com/user-attachments/assets/28ec5be2-a0a7-4287-b354-9b02c9a56898)
 ### Enhancer→Gene tab
