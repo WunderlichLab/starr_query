@@ -20,7 +20,7 @@ Our database will incorporate this data to allow researchers easy access and ret
 ## Repo Structure
 
 ```
-nextflow-template/
+project_folder/
 ├── app.py
 ├── templates/
 │   ├── find_enhancer_results.html
@@ -31,12 +31,39 @@ nextflow-template/
     │   └── wunderlich_lab_clear.png
 │   └── design.css
 ├── db_schema.sql
-├── 1_creating_files.ipynb
-├── create_tables.sql
-├── queries.sql
-└── README.md
+├── requirements.txt
+├── 1_creating_files.ipynb   # Preprocessing data
+├── create_tables.sql        # Creating tables for database
+├── queries.sql              # Database queries
+└── README.md                # Project description and setup instructions
+```
+```#``` indicate files not necessary for database website implementation
+
+## Moving Project to New Computer
+### New Computer Requirements
+- internet server (Apache or similar)
+- mod_wsgi (works with Apache to serve flask programs)
+- mariadb
+
+### Database Structure
+db_schema.sql contains the database structure which contains CREATE TABLE instructions. Restore the structure on the new computer using:
+```
+mariadb -u your_user -p -e "CREATE DATABASE your_database_name;"
+mariadb -u your_user -p your_database_name < db_schema.sql
+```
+Then, upload the data manually (LOAD DATA LOCAL INFILE) once the tables are created.
+
+### Python Packages
+On the new computer, install all the Python packages with the following:
+```
+pip3 install -r requirements.txt
 ```
 
+### File Organization
+The files will have the same organization as shown earlier (Repo Structure) on the new computer, but the project_folder will be dependent on
+the mod_wsgi setup.
+
+## Website Tour
 ### Introduction tab
 ![image](https://github.com/user-attachments/assets/28ec5be2-a0a7-4287-b354-9b02c9a56898)
 ### Enhancer→Gene tab
