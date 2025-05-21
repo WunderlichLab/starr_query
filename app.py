@@ -3,9 +3,12 @@
 from flask import Flask, render_template, request
 import json
 import mariadb
+import os
 from flask import jsonify
 
 app = Flask(__name__)
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def connect_db():
     #connect to database on host
