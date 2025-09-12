@@ -1,6 +1,6 @@
 -- select database
-use Team9;
-show tables;
+USE starr_query;
+SHOW tables;
 
 -- drop table statements, "child" Associations table first
 DROP TABLE IF EXISTS Associations; 
@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS Enhancers;
 
 CREATE TABLE Enhancers (
 eid INTEGER NOT NULL AUTO_INCREMENT, 
-name varchar(30),
+name VARCHAR(30),
 chromosome VARCHAR(2), 
 start INTEGER, 
 end INTEGER, 
@@ -19,7 +19,7 @@ tf_counts VARCHAR(150),
 tbs INTEGER,
 PRIMARY KEY (eid), 
 INDEX location (chromosome, start, end) 
-) engine=innodb;
+) ENGINE=innodb;
 
 CREATE TABLE Genes ( 
 gid INTEGER NOT NULL AUTO_INCREMENT,
@@ -32,7 +32,7 @@ immune_process VARCHAR(50),
 time_cluster ENUM('early_C2','mid_C3','late_C1','late_C4'), 
 PRIMARY KEY (gid), 
 INDEX location (chromosome, start, end) 
-) engine=innodb;
+) ENGINE=innodb;
 
 CREATE TABLE Associations (  
 eid INTEGER NOT NULL, 
@@ -52,15 +52,15 @@ FOREIGN KEY (gid) REFERENCES Genes (gid) ON UPDATE CASCADE ON DELETE CASCADE
 -- loading in data
 -- note that empty fields are designated by NULL 
 
-load data local infile 'C:/Users/jkoda/Downloads/enhancer.csv' 
-into table Enhancers
-fields terminated by ','
-ignore 1 lines
-(name, chromosome, start, end, @tf_counts, @tbs)
+LOAD DATA LOCAL INFILE '/Users/anushka/BU/starr_query/processed_data/enhancer.csv'
+INTO TABLE Enhancers
+FIELDS TERMINATED BY ','
+IGNORE 1 LINES
+(name, chromosome, start, end, @tf_counts,@tbs)
 set tf_counts = NULLIF(@tf_counts, ''),
   tbs = NULLIF(@tbs, '');
 
-load data local infile 'C:/Users/jkoda/Downloads/genes.csv'
+load data local infile '/Users/anushka/BU/starr_query/processed_data/genes.csv'
 into table Genes
 fields terminated by ','
 ignore 1 lines
@@ -85,7 +85,7 @@ CREATE TEMPORARY TABLE TempAssociations (
   activity DOUBLE
 ) engine=innodb;
 
-load data local infile 'C:/Users/jkoda/Downloads/associations.csv'
+load data local infile '/Users/anushka/BU/starr_query/processed_data/associations.csv'
 into table TempAssociations
 fields terminated by ','
 ignore 1 lines
