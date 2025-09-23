@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
 from flask import Flask, render_template, request
-import json
 import mariadb
 import os
-from flask import jsonify
+
 
 app = Flask(__name__)
 
@@ -13,11 +12,11 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 def connect_db():
     #connect to database on host
     connection = mariadb.connect(
-        host = "bioed-new.bu.edu",
-        user = "garytwu",
-        password = "cinderella",
-        database = "Team9",
-        port = 4253
+        host = "localhost",
+        user = "anushka",
+        password = "web#1234",
+        database = "starr_query",
+        port = 3306
     )
     return connection
 
