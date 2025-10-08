@@ -3,7 +3,7 @@
     <head>
         <title>Large-scale Enhancer Screen Database</title>
 
-        <!-- Your custom CSS -->
+        <!--  custom CSS -->
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='design.css') }}">
 
         <!-- DataTables core CSS -->
@@ -40,7 +40,7 @@
             </h4>
 
             <ul>
-                <li>Search by enhancer region or gene symbol/ID</li>
+                <li>Search by enhancer region or gene symbol or ID</li>
                 <li>Filter results by activity score or experimental condition</li>
                 <li>View results in interactive tables and histograms</li>
             </ul>
@@ -98,7 +98,9 @@
             </form>
 
             <!-- results will be displayed here -->
-            <div id="enhancer-results"></div>
+            <div id="enhancer-results">
+
+            </div>
 
         </div>
 
@@ -110,10 +112,22 @@
             </h4>
             <form id="gene-form" action="{{ url_for('find_enhancer') }}" method="POST">
             <div style="display:flex; gap:2rem; margin-bottom:1rem;">
-                <label>Gene Symbol:<br><input type="text" name="symbol"></label>
-                <span style="align-self:center;font-weight:bold;">or</span>
-                <label>Gene ID:<br><input type="text" name="geneid"></label>
-                <span style="align-self:center;font-weight:bold;">or</span>
+                <label>
+                    Gene Symbol:<br><input type="text" name="symbol">
+                </label>
+
+                <span style="align-self:center;font-weight:bold;">
+                    or
+                </span>
+
+                <label>
+                    Gene ID:<br><input type="text" name="geneid">
+                </label>
+
+                <span style="align-self:center;font-weight:bold;">
+                    or
+                </span>
+
                 <label>
                 Chromosomal Location:<br>
                 <select name="chr">
@@ -141,7 +155,7 @@
                 <select name="condition">
                     <option value="">-- All --</option>
                     <option value="Control">Control</option>
-                    <option value="HKSM">HKSM</option>
+                    <option value="IMD">IMD</option>
                     <option value="20E">20E</option>
                 </select>
                 </label>
@@ -162,7 +176,7 @@
         </div>
 
         <!-- Help Page -->
-	<div id="help-page" class="tab-content">
+	    <div id="help-page" class="tab-content">
 	    <h2>Help Page</h2>
 	    <p>The Large-Scale Enhancer Database contains STARR-seq data from the Wunderlich Lab measuring <i>Drosophila</i> enhancer activity and associated gene expression across different experimental conditions.</p>
 	    <p>This database allows researchers to query for gene-enhancer associations and visualize enhancer activity to explore regulatory mechanisms in immune responses.</p>
@@ -171,7 +185,7 @@
 	    <ul>
 	    	<li>Control</li>
 		<li>Hormone Treatment: 20E</li>
-		<li>Immune Treatment: Heat-killed <i>S. marcescense</i> (HKSM) also treated with 20E</li> 
+		<li>Immune Treatment: Heat-killed <i>S. marcescense</i> (IMD) also treated with 20E</li>
 	    </ul>
 	    <p>Each of these datasets contain the following fields:</p>
 	    <ul>
@@ -179,10 +193,9 @@
 		<li>Genes found within 15kb of enhancer regions</li>
 		<li>Gene expression changes (LogFC values) derived from RNA-seq experiments</li> 
 		<ul>
-		      <li>2021 LogFC IMD vs Control</li>
-		      <li>coSTARR LogFC HKSM vs 20E</li>
-		      <li>coSTARR 20E vs Control</li>
-		      <li>Cells 20E vs Control</li>
+		      <li>LogFC IMD vs Control</li>
+		      <li>LogFC IMD vs 20E</li>
+		      <li>LogFC 20E vs Control</li>
 		</ul>
 	 	<li>Immune pathway annotations of genes</li>
 		<li>Time cluster of genes as classified by Schlamp et. al</li>
@@ -203,6 +216,20 @@
 	    <p>This database was created for and with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianne Cohen for their support and hope that this website will be useful for the members of the Wunderlich Lab.</p>
         <p> This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University facilitated by Dr. Gary Benson.</p>
 	</div>	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         <!-- JS Libraries & Custom Script (in correct order) -->
         <!-- 1. jQuery -->

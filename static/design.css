@@ -107,18 +107,15 @@ table {
 th {
     background-color: cadetblue;
     color: white;
-    text-align: left;
+    text-align: center;
     padding: 12px 15px;
     font-weight: 600;
+
 }
 
 td {
     padding: 12px 15px;
     border-bottom: 1px solid #ddd;
-}
-
-tr:hover {
-    background-color: #e0eeee;
 }
 
 /* --- Info Boxes --- */
