@@ -12,8 +12,9 @@ DROP TABLE IF EXISTS Enhancers;
 CREATE TABLE Enhancers (
 eid INTEGER NOT NULL AUTO_INCREMENT, 
 name VARCHAR(30),
-chromosome VARCHAR(2), 
-start INTEGER, 
+chromosome VARCHAR(2),
+exp_condition ENUM('Control','20E','IMD'),
+start INTEGER,
 end INTEGER,
 en_length INTEGER,
 tf_counts VARCHAR(150),
@@ -25,25 +26,30 @@ INDEX location (chromosome, start, end)
 CREATE TABLE Genes ( 
 gid INTEGER NOT NULL AUTO_INCREMENT,
 geneid VARCHAR(20),
-chromosome VARCHAR(2), 
-start INTEGER, 
+chromosome ENUM('3R','3L','2R','2L','X','Y','4'),
+start INTEGER,
 end INTEGER,
 gene_length INTEGER,
 symbol VARCHAR(20), 
 immune_process VARCHAR(50), 
-time_cluster ENUM('early_C2','mid_C3','late_C1','late_C4'), 
+time_cluster ENUM('early_C2','mid_C3','late_C1','late_C4'),
+tpm_ctrl DOUBLE,
+tpm_20e DOUBLE,
+tpm_imd DOUBLE,
 PRIMARY KEY (gid), 
 INDEX location (chromosome, start, end) 
 ) ENGINE=innodb;
 
 CREATE TABLE Associations (  
 eid INTEGER NOT NULL, 
-gid INTEGER NOT NULL, 
+gid INTEGER NOT NULL,
 imd_vs_ctrl DOUBLE,
-cells_20e_vs_ctrl DOUBLE,
-hksm_vs_20e DOUBLE,
-costarr_20e_vs_ctrl DOUBLE,
-exp_condition ENUM('Control', '20E', 'HKSM'),
+imd_vs_20e DOUBLE,
+20e_vs_ctrl DOUBLE,
+tpm_ctrl DOUBLE,
+tpm_20e DOUBLE,
+tpm_imd DOUBLE,
+exp_condition ENUM('Control', '20E', 'IMD'),
 activity DOUBLE, 
 PRIMARY KEY (eid, gid, exp_condition), 
 FOREIGN KEY (eid) REFERENCES Enhancers (eid) ON UPDATE CASCADE ON DELETE CASCADE, 
@@ -58,7 +64,7 @@ LOAD DATA LOCAL INFILE '/Users/anushka/BU/starr_query/processed_data/enhancer.cs
 INTO TABLE Enhancers
 FIELDS TERMINATED BY ','
 IGNORE 1 LINES
-(name, chromosome, start, end, @tf_counts,@tbs)
+(name, chromosome, start, end, en_length, exp_condition, @tf_counts,@tbs)
 set tf_counts = NULLIF(@tf_counts, ''),
   tbs = NULLIF(@tbs, '');
 
@@ -66,7 +72,7 @@ load data local infile '/Users/anushka/BU/starr_query/processed_data/genes.csv'
 into table Genes
 fields terminated by ','
 ignore 1 lines
-(geneid, chromosome, start, end, symbol, @immune_process, @time_cluster)
+(geneid, chromosome, start, end, symbol, @immune_process, @time_cluster, gene_length, tpm_ctrl, tpm_20e, tpm_imd)
 set immune_process = NULLIF(@immune_process, ''),
   time_cluster = NULLIF(@time_cluster, '');
 
@@ -80,9 +86,8 @@ CREATE TEMPORARY TABLE TempAssociations (
   enhancer_name VARCHAR(30),
   geneid VARCHAR(20),
   imd_vs_ctrl DOUBLE,
-  cells_20e_vs_ctrl DOUBLE,
-  hksm_vs_20e DOUBLE,
-  costarr_20e_vs_ctrl DOUBLE,
+  imd_vs_20e DOUBLE,
+  20e_vs_ctrl DOUBLE,
   exp_condition ENUM('Control', '20E', 'HKSM'),
   activity DOUBLE
 ) engine=innodb;
@@ -91,11 +96,10 @@ load data local infile '/Users/anushka/BU/starr_query/processed_data/association
 into table TempAssociations
 fields terminated by ','
 ignore 1 lines
-(enhancer_name, geneid, @imd_vs_ctrl, @cells_20e_vs_ctrl, @hksm_vs_20e, @costarr_20e_vs_ctrl, exp_condition, activity)
+(enhancer_name, geneid, @imd_vs_20e, @20e_vs_ctrl, @imd_vs_ctrl, exp_condition, activity)
 set imd_vs_ctrl = NULLIF(@imd_vs_ctrl, ''),
-  cells_20e_vs_ctrl = NULLIF(@cells_20e_vs_ctrl, ''),
-  hksm_vs_20e = NULLIF(@hksm_vs_20e, ''),
-  costarr_20e_vs_ctrl = NULLIF(@costarr_20e_vs_ctrl, '');
+  imd_vs_20e = NULLIF(@imd_vs_20e, ''),
+  20e_vs_ctrl = NULLIF(@20e_vs_ctrl, '');
 
 -- took too long to insert data from Temp table to Associations table so creating indexes
 CREATE INDEX idx_enhancer_name ON Enhancers(name);
@@ -111,11 +115,11 @@ JOIN Genes g ON t.geneid = g.geneid
 limit 100;
 
 -- inserting data
-insert into Associations (eid, gid, imd_vs_ctrl, cells_20e_vs_ctrl, hksm_vs_20e, costarr_20e_vs_ctrl, exp_condition, activity)
-select e.eid, g.gid, t.imd_vs_ctrl, t.cells_20e_vs_ctrl, t.hksm_vs_20e, t.costarr_20e_vs_ctrl, t.exp_condition, t.activity
+insert into Associations (eid, gid, imd_vs_ctrl, imd_vs_20e, 20e_vs_ctrl, exp_condition, activity, tpm_20e, tpm_imd, tpm_ctrl)
+select e.eid, g.gid, t.imd_vs_ctrl, t.imd_vs_20e, t.20e_vs_ctrl, t.exp_condition, t.activity, g.tpm_20e, g.tpm_imd, g.tpm_ctrl
 from TempAssociations t join Enhancers e on t.enhancer_name = e.name join Genes g on t.geneid = g.geneid;
 
 
 select * from Genes;
 select * from Enhancers;
-select * from Associations
+select * from Associations;
