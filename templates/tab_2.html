@@ -1,0 +1,79 @@
+{% if enhancers %}
+    {% for e in enhancers %}
+        {% if loop.first %}
+        <!-- Gene Info (shown once) -->
+        <table id="geneInfo">
+          <tbody>
+          <tr>
+              <td rowspan="3">Gene Information:</td>
+          </tr>
+            <tr>
+              <td>Gene Symbol</td>
+              <td>{{ e.gene_symbol }}</td>
+            </tr>
+            <tr>
+              <td>Gene ID</td>
+              <td>{{ e.gene_id }}</td>
+            </tr>
+          <tr>
+              <td rowspan="4">TPM Values</td>
+          </tr>
+            <tr>
+              <td>Control</td>
+              <td>{{ e.tpm_ctrl }}</td>
+            </tr>
+            <tr>
+              <td>IMD</td>
+              <td>{{ e.tpm_imd }}</td>
+            </tr>
+            <tr>
+              <td>20E</td>
+              <td>{{ e.tpm_20e }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Enhancer Table Header -->
+        <table id="enhancerTable" class="display" style="width:100%; margin-top:1em;">
+          <thead>
+            <tr>
+              <th>Enhancer Name</th>
+              <th>Enhancer Length</th>
+              <th>Activity Score</th>
+              <th>Condition</th>
+              <th>UCSC View</th>
+            </tr>
+          </thead>
+          <tbody>
+        {% endif %}
+
+            <!-- Enhancer Row -->
+            <tr>
+              <td>{{ e.enhancer_name }}</td>
+              <td>{{ e.en_length }}</td>
+              <td>{{ e.act_score }}</td>
+              <td>{{ e.exp_condition }}</td>
+              <td>
+                {% if e.chromosome and e.start and e.end %}
+                  <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.start }}-{{ e.end }}"
+                     target="_blank">View</a>
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+            </tr>
+
+        {% if loop.last %}
+          </tbody>
+        </table>
+        {% endif %}
+    {% endfor %}
+
+    {% if chart_data and chart_data|length > 1 %}
+    <div id="activity_chart" data-chart='{{ chart_data|tojson }}'
+         style="width:900px; height:500px; margin-top:2em;"></div>
+    {% endif %}
+
+{% else %}
+<p>No enhancers found matching your criteria.</p>
+{% endif %}
