@@ -27,7 +27,6 @@ CREATE TABLE `Associations` (
   `eid` int(11) NOT NULL,
   `gid` int(11) NOT NULL,
   `imd_vs_ctrl` double DEFAULT NULL,
-  `cells_20e_vs_ctrl` double DEFAULT NULL,
   `hksm_vs_20e` double DEFAULT NULL,
   `costarr_20e_vs_ctrl` double DEFAULT NULL,
   `exp_condition` enum('Control','20E','HKSM') NOT NULL,
