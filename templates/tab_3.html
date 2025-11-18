@@ -27,15 +27,15 @@
                                             {{ e.enhancer_id }}
                                         </a>
                                     </td>
-                                    <td>{{ e.activity_class or 'N/A' }}</td>
-                                    <td>{{ e.accessibility or 'N/A' }}</td>
+                                    <td>{{ c.activity_class or '-' }}</td>
+                                    <td>{{ g.accessibility or '-' }}</td>
                                     <td>
                                         <a href="https://flybase.org/reports/{{ g.gene_id }}.html" target="_blank">
                                         {{ g.gene_symbol or g.gene_id}}
                                         </a>
                                     </td>
-                                    <td>{{ g.time_cluster or 'N/A' }}</td>
-                                    <td>{{ g.immune_process or 'N/A' }}</td>
+                                    <td>{{ g.time_cluster or '-' }}</td>
+                                    <td>{{ g.immune_process or '-' }}</td>
                             </tr>
                         {% endfor %}
                     {% endfor %}
