@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+
 from flask import Flask, render_template, request
 import mariadb
 import os
 from dotenv import load_dotenv
+from collections import namedtuple
 
 app = Flask(__name__)
 
@@ -22,7 +24,7 @@ def connect_db():
 
 ## Tab 1
 
-def get_genes_by_enhancer(chr, start, end):
+def associations_by_region(chr, start, end):
     try:
         conn = connect_db()
         cursor = conn.cursor()
@@ -31,78 +33,123 @@ def get_genes_by_enhancer(chr, start, end):
             SELECT
                 e.name AS enhancer_id,
                 e.en_length AS en_length,
+                a.accessibility AS accessibility,
+                e.chromosome AS chromosome,
+                e.start AS estart,
+                e.end AS eend,
                 e.exp_condition AS exp_condition,
                 a.activity AS act_score,
                 g.symbol AS gene_symbol,
                 g.geneid AS gene_id,
-                a.tpm_ctrl AS tpm_ctrl,
-                a.tpm_imd AS tpm_imd,
-                a.tpm_20e AS tpm_20e,
+                g.tpm_ctrl AS tpm_ctrl,
+                g.tpm_imd AS tpm_imd,
+                g.tpm_20e AS tpm_20e,
                 g.immune_process AS immune_process,
                 g.time_cluster AS time_cluster
             FROM Enhancers e
             JOIN Associations a ON e.eid = a.eid
             JOIN Genes g ON a.gid = g.gid
             WHERE e.chromosome = %s
-            AND e.start >= %s
-            AND e.end <= %s
+              AND e.start >= %s
+              AND e.end <= %s
+            ORDER BY e.name, e.exp_condition, g.symbol
         """
 
         cursor.execute(query, (chr, start, end))
         rows = cursor.fetchall()
 
-        rows = list(set(rows))
-
-        enhancer_dict = {}
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_rows = []
         for row in rows:
-            (
-                enhancer_id,
-                en_length,
-                exp_condition,
-                act_score,
-                gene_symbol,
-                gene_id,
-                tpm_ctrl,
-                tpm_imd,
-                tpm_20e,
-                immune_process,
-                time_cluster
-            ) = row
+            if row not in seen:
+                seen.add(row)
+                unique_rows.append(row)
 
-            if enhancer_id not in enhancer_dict:
-                enhancer_dict[enhancer_id] = {
+        # DefaultDict for better grouping and sorting
+        enhancer_map = {}
+
+        Enhancer = namedtuple('Enhancer', ['enhancer_id', 'en_length', 'accessibility','chromosome', 'window_start', 'window_end', 'conditions'])
+        Condition = namedtuple('Condition', ['exp_condition', 'activity', 'genes'])
+        Gene = namedtuple('Gene', ['gene_symbol','gene_id', 'tpm_ctrl', 'tpm_imd', 'tpm_20e', 'immune_process', 'time_cluster'])
+
+        for row in unique_rows:
+            (enhancer_id, en_length, accessibility,
+             chrom, estart, eend,
+             exp_condition, act_score, gene_symbol, gene_id,
+             tpm_ctrl, tpm_imd, tpm_20e, immune_process, time_cluster
+             ) = row
+
+
+
+            # compute a 5 kb window around the enhancer
+            window_start = max(0, estart - 5000)
+            window_end = eend + 5000
+
+            # For a new enhancer, define a first level key
+            if enhancer_id not in enhancer_map:
+                enhancer_map[enhancer_id] = {
                     'enhancer_id': enhancer_id,
                     'en_length': en_length,
-                    'act_score': act_score,
-                    'exp_condition': exp_condition,
-                    'gene_interactions': []
+                    'accessibility': accessibility,
+                    'chromosome': chrom,
+                    'window_start': window_start,
+                    'window_end': window_end,
+                    'conditions': {}
                 }
 
-            enhancer_dict[enhancer_id]['gene_interactions'].append({
-                'gene_symbol': gene_symbol or gene_id,
-                'tpm_ctrl': tpm_ctrl,
-                'tpm_imd': tpm_imd,
-                'tpm_20e': tpm_20e,
-                'immune_process': immune_process,
-                'time_cluster': time_cluster
-            })
+            # If the enhancer exists, but new exp condition, define a new second level key
+            if exp_condition not in enhancer_map[enhancer_id]['conditions']:
+                enhancer_map[enhancer_id]['conditions'][exp_condition] = {
+                    'exp_condition': exp_condition,
+                    'activity': act_score,
+                    'genes': []
+                }
 
-        # {'2L:484243-485063': {'enhancer_id': '2L:484243-485063', 'en_length': 820, 'act_score': 0.0, 'exp_condition': 'IMD', 'immune_process': None, 'time_cluster': None,
-        # 'gene_interactions': [{'gene_symbol': 'lncRNA:CR46258', 'gene_id': 'FBgn0267991', 'tpm_ctrl': 1.95097, 'tpm_imd': 0.30911, 'tpm_20e': 1.08807},
-        # {'gene_symbol': 'MED15', 'gene_id': 'FBgn0027592', 'tpm_ctrl': 99.10049, 'tpm_imd': 70.32382, 'tpm_20e': 100.93579},
-        # {'gene_symbol': 'ush', 'gene_id': 'FBgn0003963', 'tpm_ctrl': 41.77297, 'tpm_imd': 18.94429, 'tpm_20e': 33.82258},
-        # {'gene_symbol': 'cbt', 'gene_id': 'FBgn0043364', 'tpm_ctrl': 78.24543, 'tpm_imd': 32.20612, 'tpm_20e': 48.50113},
-        # {'gene_symbol': 'CG4297', 'gene_id': 'FBgn0031258', 'tpm_ctrl': 13.5922, 'tpm_imd': 2.315, 'tpm_20e': 6.39681}]},
-        # '2L:484243-485251': {'enhancer_id': '2L:484243-485251', 'en_length': 1008, 'act_score': 1240.48, 'exp_condition': '20E', 'immune_process': None, 'time_cluster': None,
-        # 'gene_interactions': [{'gene_symbol': 'lncRNA:CR46258', 'gene_id': 'FBgn0267991', 'tpm_ctrl': 1.95097, 'tpm_imd': 0.30911, 'tpm_20e': 1.08807},
-        # {'gene_symbol': 'MED15', 'gene_id': 'FBgn0027592', 'tpm_ctrl': 99.10049, 'tpm_imd': 70.32382, 'tpm_20e': 100.93579},
-        # {'gene_symbol': 'ush', 'gene_id': 'FBgn0003963', 'tpm_ctrl': 41.77297, 'tpm_imd': 18.94429, 'tpm_20e': 33.82258},
-        # {'gene_symbol': 'cbt', 'gene_id': 'FBgn0043364', 'tpm_ctrl': 78.24543, 'tpm_imd': 32.20612, 'tpm_20e': 48.50113},
-        # {'gene_symbol': 'CG4297', 'gene_id': 'FBgn0031258', 'tpm_ctrl': 13.5922, 'tpm_imd': 2.315, 'tpm_20e': 6.39681}]}}
+            # Create gene object
+            gene_obj = Gene(
+                gene_symbol=gene_symbol,
+                gene_id=gene_id,
+                tpm_ctrl=tpm_ctrl,
+                tpm_imd=tpm_imd,
+                tpm_20e=tpm_20e,
+                immune_process=immune_process,
+                time_cluster=time_cluster
+            )
+
+            # Only add if not already present (avoid duplicates)
+            if gene_obj not in enhancer_map[enhancer_id]['conditions'][exp_condition]['genes']:
+                enhancer_map[enhancer_id]['conditions'][exp_condition]['genes'].append(gene_obj)
+
+        enhancers_details = []
+        for enhancer_id in sorted(enhancer_map.keys()):
+            enhancer_info = enhancer_map[enhancer_id]
+
+            conditions_list = []
+            for condition_name in sorted(enhancer_info['conditions'].keys()):
+                condition_info = enhancer_info['conditions'][condition_name]
+                c_tup = Condition(
+                    exp_condition=condition_info['exp_condition'],
+                    activity=condition_info['activity'],
+                    genes=condition_info['genes']
+                )
+                conditions_list.append(c_tup)
+
+            e_tup = Enhancer(
+                enhancer_id=enhancer_info['enhancer_id'],
+                en_length=enhancer_info['en_length'],
+                accessibility=enhancer_info['accessibility'],
+                chromosome=enhancer_info['chromosome'],
+                window_start = enhancer_info['window_start'],
+                window_end = enhancer_info['window_end'],
+                conditions=conditions_list
+            )
+            enhancers_details.append(e_tup)
+
+
         conn.close()
+        return enhancers_details
 
-        # convert dict to list for template
-        return list(enhancer_dict.values())
 
 
     except mariadb.Error as e:
@@ -111,15 +158,17 @@ def get_genes_by_enhancer(chr, start, end):
 
 
 ## Tab 2
-def get_enhancers_by_gene(symbol=None, geneid=None, activity_score=500):
+def associations_by_symbol(symbol=None, geneid=None, activity_score=500):
     try:
         conn = connect_db()
         cursor = conn.cursor(dictionary=True)
 
         query = """
         SELECT
-            e.name AS enhancer_name,
+            e.name AS enhancer_id,
             e.en_length AS en_length,
+            a.accessibility as accessibility,
+            a.dist_to_enh as dist_to_enh,
             a.activity AS act_score,
             a.exp_condition AS exp_condition,
             g.symbol AS gene_symbol,
@@ -157,88 +206,225 @@ def get_enhancers_by_gene(symbol=None, geneid=None, activity_score=500):
         print(f"Error connecting/querying database: {e}")
         return []
 
-'''def get_enhancers_by_range(chr, start, end):
-    try:
-        conn = connect_db()
-        cursor = conn.cursor(dictionary=True)
 
-        query = """
-        SELECT
-            e.name AS enhancer_name,
-            e.en_length AS en_length,
-            a.activity AS act_score,
-            a.exp_condition AS exp_condition,
-            g.symbol AS gene_symbol,
-            g.geneid AS gene_id,
-            g.tpm_ctrl AS tpm_ctrl,
-            g.tpm_imd AS tpm_imd,
-            g.tpm_20e AS tpm_20e,
-            g.chromosome AS chromosome,
-            g.start AS start,
-            g.end AS end
-        FROM Enhancers e
-        JOIN Associations a ON e.eid = a.eid
-        JOIN Genes g ON a.gid = g.gid
-        WHERE g.chromosome = %s
-          AND g.start >= %s
-          AND g.end <= %s
-        """
-
-        cursor.execute(query, (chr, start, end))
-        result = cursor.fetchall()
-
-        conn.close()
-        return result
-
-    except mariadb.Error as e:
-        print(f"Error connecting/querying database: {e}")
-        return []'''
-
-'''def get_gene_symbol_by_geneid(geneid):
+## Tab 3
+def get_activity_class_options():
+    """Fetch unique activity classes, conditions, time clusters, and immune processes from database"""
     try:
         conn = connect_db()
         cursor = conn.cursor()
 
-        query = "SELECT symbol FROM Genes WHERE gid = %s"
-        cursor.execute(query, (geneid,))
-        result = cursor.fetchone()
+        # Get unique activity classes
+        cursor.execute(
+            "SELECT DISTINCT activity_class FROM Associations WHERE activity_class IS NOT NULL ORDER BY activity_class")
+        activity_classes = [row[0] for row in cursor.fetchall()]
+
+        # Get unique conditions
+        cursor.execute("SELECT DISTINCT exp_condition FROM Associations ORDER BY exp_condition")
+        conditions = [row[0] for row in cursor.fetchall()]
+
+        # Get unique time clusters
+        cursor.execute("SELECT DISTINCT time_cluster FROM Genes WHERE time_cluster IS NOT NULL ORDER BY time_cluster")
+        time_clusters = [row[0] for row in cursor.fetchall()]
+
+        # Get unique immune processes
+        cursor.execute(
+            "SELECT DISTINCT immune_process FROM Genes WHERE immune_process IS NOT NULL ORDER BY immune_process")
+        immune_processes = [row[0] for row in cursor.fetchall()]
 
         conn.close()
-        if result:
-            return result[0]  # symbol
-        else:
-            return None
+        return {
+            'activity_classes': activity_classes,
+            'conditions': conditions,
+            'time_clusters': time_clusters,
+            'immune_processes': immune_processes
+        }
+
     except mariadb.Error as e:
-        print(f"Error fetching gene symbol: {e}")
-        return None'''
+        print(f"Error fetching filter options: {e}")
+        return {
+            'activity_classes': [],
+            'conditions': [],
+            'time_clusters': [],
+            'immune_processes': []
+        }
 
 
+def search_by_activity_class(activity_class=None, condition=None, activity_score_min=0,
+                             time_cluster=None, immune_process=None):
+    """Search enhancers by activity class and additional filters"""
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+
+        query = """
+                SELECT e.name           AS enhancer_id, 
+                       e.en_length      AS en_length, 
+                       a.accessibility  AS accessibility, 
+                       e.chromosome     AS chromosome, 
+                       e.start          AS estart, 
+                       e.end            AS eend, 
+                       a.activity       AS act_score, 
+                       a.activity_class AS activity_class, 
+                       a.exp_condition  AS exp_condition, 
+                       g.symbol         AS gene_symbol, 
+                       g.geneid         AS gene_id, 
+                       g.tpm_ctrl       AS tpm_ctrl, 
+                       g.tpm_imd        AS tpm_imd, 
+                       g.tpm_20e        AS tpm_20e, 
+                       g.immune_process AS immune_process, 
+                       g.time_cluster   AS time_cluster
+                FROM Enhancers e
+                         JOIN Associations a ON e.eid = a.eid
+                         JOIN Genes g ON a.gid = g.gid
+                WHERE 1 = 1
+                """
+
+        params = []
+
+        if activity_class:
+            query += " AND a.activity_class = %s"
+            params.append(activity_class)
+
+        if condition:
+            query += " AND a.exp_condition = %s"
+            params.append(condition)
+
+        if activity_score_min:
+            query += " AND a.activity >= %s"
+            params.append(activity_score_min)
+
+        if time_cluster:
+            query += " AND g.time_cluster = %s"
+            params.append(time_cluster)
+
+        if immune_process:
+            query += " AND g.immune_process = %s"
+            params.append(immune_process)
+
+        query += " ORDER BY e.name, a.exp_condition, g.symbol"
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_rows = []
+        for row in rows:
+            if row not in seen:
+                seen.add(row)
+                unique_rows.append(row)
+
+        # Structure data similar to Tab 1
+        enhancer_map = {}
+
+        Enhancer = namedtuple('Enhancer', ['enhancer_id', 'en_length',
+                                           'accessibility', 'chromosome', 'window_start', 'window_end', 'conditions'])
+        Condition = namedtuple('Condition', ['exp_condition', 'activity', 'activity_class', 'genes'])
+        Gene = namedtuple('Gene', ['gene_symbol', 'gene_id', 'tpm_ctrl', 'tpm_imd', 'tpm_20e',
+                                   'immune_process', 'time_cluster'])
+
+        for row in unique_rows:
+            (enhancer_id, en_length, accessibility, chrom, estart, eend,
+             act_score, act_class, exp_condition, gene_symbol, gene_id, tpm_ctrl, tpm_imd,
+             tpm_20e, immune_process, time_cluster) = row
+
+            window_start = max(0, estart - 5000)
+            window_end = eend + 5000
+
+            if enhancer_id not in enhancer_map:
+                enhancer_map[enhancer_id] = {
+                    'enhancer_id': enhancer_id,
+                    'en_length': en_length,
+                    'accessibility': accessibility,
+                    'chromosome': chrom,
+                    'window_start': window_start,
+                    'window_end': window_end,
+                    'conditions': {}
+                }
+
+            condition_key = f"{exp_condition}_{act_class}"
+            if condition_key not in enhancer_map[enhancer_id]['conditions']:
+                enhancer_map[enhancer_id]['conditions'][condition_key] = {
+                    'exp_condition': exp_condition,
+                    'activity': act_score,
+                    'activity_class': act_class,
+                    'genes': []
+                }
+
+            gene_obj = Gene(
+                gene_symbol=gene_symbol,
+                gene_id=gene_id,
+                tpm_ctrl=tpm_ctrl,
+                tpm_imd=tpm_imd,
+                tpm_20e=tpm_20e,
+                immune_process=immune_process,
+                time_cluster=time_cluster
+            )
+
+            if gene_obj not in enhancer_map[enhancer_id]['conditions'][condition_key]['genes']:
+                enhancer_map[enhancer_id]['conditions'][condition_key]['genes'].append(gene_obj)
+
+        enhancers_details = []
+        for enhancer_id in sorted(enhancer_map.keys()):
+            enhancer_info = enhancer_map[enhancer_id]
+
+            conditions_list = []
+            for condition_key in sorted(enhancer_info['conditions'].keys()):
+                condition_info = enhancer_info['conditions'][condition_key]
+                c_tup = Condition(
+                    exp_condition=condition_info['exp_condition'],
+                    activity=condition_info['activity'],
+                    activity_class=condition_info['activity_class'],
+                    genes=condition_info['genes']
+                )
+                conditions_list.append(c_tup)
+
+            e_tup = Enhancer(
+                enhancer_id=enhancer_info['enhancer_id'],
+                en_length=enhancer_info['en_length'],
+                accessibility=enhancer_info['accessibility'],
+                chromosome=enhancer_info['chromosome'],
+                window_start=enhancer_info['window_start'],
+                window_end=enhancer_info['window_end'],
+                conditions=conditions_list
+            )
+            enhancers_details.append(e_tup)
+
+        conn.close()
+        return enhancers_details
+
+    except mariadb.Error as e:
+        print(f"Database error: {e}")
+        return []
+
+
+## Tab 0
 @app.route('/')
 def index():
-    return render_template('template.html')
+    filter_options = get_activity_class_options()
+    return render_template('template.html', filter_options=filter_options, request=request)
 
+## Tab 1
 @app.route('/submit_enhancer', methods=['POST'])
 def find_gene():
     chr = request.form['chr']
     start = int(request.form['start'])
     end = int(request.form['end'])
-    enhancers = get_genes_by_enhancer(chr, start, end)
+    enhancers = associations_by_region(chr, start, end)
 
     return render_template('tab_1.html', enhancers=enhancers)
 
-
+## Tab 2
 @app.route('/submit_gene', methods=['POST'])
 def find_enhancer():
-    # 1) pull inputs
+    # pull inputs
     symbol    = request.form.get("symbol","").strip()
     geneid    = request.form.get("geneid","").strip()
     activity_score = float(request.form.get("activity_score", 500))
     condition = request.form.get("condition","").strip().lower()
-    '''chrom     = request.form.get("chr","").strip()
-        start_str = request.form.get("start","").strip()
-        end_str   = request.form.get("end","").strip()'''
 
-    # 2) detect modes
+    # detect modes
     has_gene   = bool(symbol or geneid)
 
     if not (has_gene):
@@ -251,46 +437,19 @@ def find_enhancer():
             )
         )
 
-    ''' if not (has_gene or has_region):
-        return render_template(
-            'tab_2.html',
-            enhancers=[],
-            chart_data=[["Activity Score"]],
-            error_message=(
-              "Please specify either a gene (symbol or gene_id) "
-              "or a chromosomal region (chr+start+end)."
-            )
-        )'''
+    # fetch
+    gene_enhancers = associations_by_symbol(symbol or None, geneid or None, activity_score) if has_gene else []
 
-    # 3) fetch
-    gene_enhancers = get_enhancers_by_gene(symbol or None, geneid or None, activity_score) if has_gene else []
-    '''region_enhancers = get_enhancers_by_range(chrom, int(start_str), int(end_str)) if has_region else []'''
-
-    '''# 4) combine
-    if has_gene and has_region:
-        gene_names   = {e["enhancer_name"] for e in gene_enhancers}
-        region_names = {e["enhancer_name"] for e in region_enhancers}
-        keep = gene_names & region_names
-        final_list = [e for e in gene_enhancers if e["enhancer_name"] in keep]
-    elif has_gene:
-        final_list = gene_enhancers
-    else:
-        final_list = region_enhancers'''
-    # Gene enhancers looks like this:
-    # {'enhancer_name': '3R:16986049-16986948', 'en_length': 899, 'act_score': 1247.73, 'exp_condition': '20E',
-    # 'gene_symbol': 'Abd-B', 'gene_id': 'FBgn0000015', 'tpm_ctrl': 0.026, 'tpm_imd': 0.03749, 'tpm_20e': 0.03821,
-    # 'chromosome': '3R', 'start': 16986049, 'end': 16986948}
-
-    # 5) filter by condition
+    # filter by condition
     if condition:
         final_list = [e for e in gene_enhancers if e["exp_condition"].strip().lower() == condition]
     else:
         final_list = gene_enhancers
 
-    # 6) build chart data
+    # build chart data
     chart_data = [["Activity Score", "Enhancer Name", "Condition"]]
     for rec in final_list:
-        chart_data.append([rec["act_score"], rec["enhancer_name"], rec["exp_condition"]])
+        chart_data.append([rec["act_score"], rec["enhancer_id"], rec["exp_condition"]])
 
     return render_template(
         'tab_2.html',
@@ -298,6 +457,47 @@ def find_enhancer():
         chart_data=chart_data,
         error_message=""
     )
+
+
+## Tab 3
+@app.route('/activity_class_search', methods=['POST'])
+def activity_class_search():
+    activity_class = request.form.get("activity_class", "").strip()
+    condition = request.form.get("condition", "").strip()
+    activity_score_min = request.form.get("activity_score_min", "0").strip()
+    time_cluster = request.form.get("time_cluster", "").strip()
+    immune_process = request.form.get("immune_process", "").strip()
+
+    try:
+        activity_score_min = float(activity_score_min) if activity_score_min else 0
+    except ValueError:
+        activity_score_min = 0
+
+    enhancers = []
+    error_message = ""
+
+    # At least one filter should be applied
+    if not any([activity_class, condition, time_cluster, immune_process]):
+        error_message = "Please select at least one filter to search"
+    else:
+        enhancers = search_by_activity_class(
+            activity_class=activity_class if activity_class else None,
+            condition=condition if condition else None,
+            activity_score_min=activity_score_min,
+            time_cluster=time_cluster if time_cluster else None,
+            immune_process=immune_process if immune_process else None
+        )
+
+        if not enhancers:
+            error_message = "No enhancers found matching your criteria"
+
+    # Return only the results div for AJAX requests
+    return render_template(
+        'tab_3.html',
+        enhancers=enhancers,
+        error_message=error_message
+    )
+
 
 if __name__ == '__main__':
     app.run(debug=True)

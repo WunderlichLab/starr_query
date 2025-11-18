@@ -25,8 +25,9 @@
         <div class="tabs">
 
             <div class="tab active" data-target="#introduction"><b>Introduction</b></div>
-            <div class="tab"        data-target="#enhancer-search"><b>Enhancer→Gene</b></div>
-            <div class="tab"        data-target="#gene-search"><b>Gene→Enhancer</b></div>
+            <div class="tab"        data-target="#region-search"><b>Search by Proximity</b></div>
+            <div class="tab"        data-target="#gene-search"><b>Search by Genes</b></div>
+            <div class="tab"        data-target="#activity-search"><b>Search by Activity Info</b></div>
             <div class="tab"	    data-target="#help-page"><b>Help Page</b></div>
 
         </div>
@@ -64,8 +65,8 @@
             </div>
         </div>
 
-        <!-- Enhancer→Gene -->
-        <div id="enhancer-search" class="tab-content">
+        <!-- Tab1 -->
+        <div id="region-search" class="tab-content">
 
             <h4>Please specify the chromosomal region that contains your enhancer(s) of interest (e.g. 2L, start: 10426653, end: 10427192).</h4>
             <!-- form -->
@@ -104,11 +105,10 @@
 
         </div>
 
-        <!-- Gene→Enhancer -->
+        <!-- Tab2 -->
         <div id="gene-search" class="tab-content">
             <h4>
-            Enter a gene (symbol eg “Abd-B” or ID eg “FBgn0000119”) or a chromosomal
-            region (e.g. 2L, start: 10426653, end: 10527192)
+            Enter a gene (symbol eg “Abd-B” or ID eg “FBgn0000119”)
             </h4>
             <form id="gene-form" action="{{ url_for('find_enhancer') }}" method="POST">
             <div style="display:flex; gap:2rem; margin-bottom:1rem;">
@@ -122,26 +122,6 @@
 
                 <label>
                     Gene ID:<br><input type="text" name="geneid">
-                </label>
-
-                <span style="align-self:center;font-weight:bold;">
-                    or
-                </span>
-
-                <label>
-                Chromosomal Location:<br>
-                <select name="chr">
-                    <option value="">--</option>
-                    <option value="2L">2L</option>
-                    <option value="2R">2R</option>
-                    <option value="3L">3L</option>
-                    <option value="3R">3R</option>
-                    <option value="4">4</option>
-                    <option value="X">X</option>
-                    <option value="Y">Y</option>
-                </select>
-                Start: <input type="number" name="start" style="width:80px;">
-                End:   <input type="number" name="end"   style="width:80px;">
                 </label>
             </div>
 
@@ -174,6 +154,78 @@
             </form>
             <div id="gene-results"></div>
         </div>
+
+        <!-- Tab3 -->
+        <div id="activity-search" class="tab-content">
+            <h4>Search enhancers by Activity Class and other filters</h4>
+
+            <form id="activity-form" action="{{ url_for('activity_class_search') }}" method="POST">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+
+                    <label>
+                        Activity Class:
+                        <select name="activity_class" id="activity_class">
+                            <option value="">-- All Classes --</option>
+                            {% for ac in filter_options.activity_classes %}
+                                <option value="{{ ac }}">{{ ac }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Experimental Condition:
+                        <select name="condition" id="condition">
+                            <option value="">-- All Conditions --</option>
+                            {% for cond in filter_options.conditions %}
+                                <option value="{{ cond }}">{{ cond }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Minimum Activity Score:
+                        <input type="number" name="activity_score_min" id="activity_score_min"
+                               placeholder="0" value="0" min="0" step="1">
+                    </label>
+
+                    <label>
+                        Time Cluster:
+                        <select name="time_cluster" id="time_cluster">
+                            <option value="">-- All Time Clusters --</option>
+                            {% for tc in filter_options.time_clusters %}
+                                <option value="{{ tc }}">{{ tc }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Immune Process:
+                        <select name="immune_process" id="immune_process">
+                            <option value="">-- All Immune Processes --</option>
+                            {% for ip in filter_options.immune_processes %}
+                                <option value="{{ ip }}">{{ ip }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+                <button type="submit">Search</button>
+                <button type="reset" style="margin-left: 1rem;">Clear Filters</button>
+            </form>
+
+            <!-- Error message display -->
+            {% if error_message %}
+                <div style="color: #d32f2f; background-color: #ffebee; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+
+            <!-- Results display -->
+            <div id="activity-results" style="margin-top: 2rem;">
+
+            </div>
+        </div>
+
 
         <!-- Help Page -->
 	    <div id="help-page" class="tab-content">
@@ -367,19 +419,51 @@
             });
 
             $('#enhancerToGeneBox').click(function() {
-                $('.tab[data-target="#enhancer-search"]').click();
+                $('.tab[data-target="#region-search"]').click();
             });
             $('#geneToEnhancerBox').click(function() {
                 $('.tab[data-target="#gene-search"]').click();
             });
 
             $('#go-to-gene').click(function() {
-                $('.tab[data-target="#enhancer-search"]').click();
+                $('.tab[data-target="#region-search"]').click();
             });
             $('#go-to-enhancer').click(function() {
                 $('.tab[data-target="#gene-search"]').click();
             });
 
+
+            // Activity Class Search AJAX + DataTable
+            $('#activity-form').submit(function(e){
+                e.preventDefault();
+                $.post(this.action, $(this).serialize())
+                .done(html => {
+                    $('#activity-results').html(html);
+
+                    // Initialize DataTable if table exists
+                    if ($.fn.DataTable.isDataTable('#activityClassTable')) {
+                        $('#activityClassTable').DataTable().clear().destroy();
+                    }
+
+                    // Wait a moment for DOM to be ready, then initialize DataTable
+                    setTimeout(() => {
+                        if ($('#activityClassTable').length) {
+                            $('#activityClassTable').DataTable({
+                                dom: 'Bfrtip',
+                                buttons: [
+                                    'csvHtml5',
+                                    { extend: 'csvHtml5', text: 'TSV', fieldSeparator: '\t', extension: '.tsv', bom: true },
+                                    'excelHtml5'
+                                ],
+                                pageLength: 25,
+                                lengthMenu: [10, 25, 50, 100],
+                                order: [[8, 'desc']], // Sort by Activity Score by default
+                                scrollX: true // Enable horizontal scrolling for wide tables
+                            });
+                        }
+                    }, 300);
+                }).fail(() => alert('Search failed. Please try again.'));
+            });
         </script>
     </body>
 </html>

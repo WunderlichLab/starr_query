@@ -1,0 +1,55 @@
+{% if enhancers %}
+    <div style="margin-top: 2em;">
+        <!-- Results Summary -->
+        <div>
+            <strong>Total Enhancers Found: {{ enhancers|length }}</strong>
+        </div>
+
+        <!-- Enhancer Table -->
+        <table id="activityClassTable" class="display" style="width:100%;">
+            <thead>
+                <tr>
+                    <th rowspan="2">Enhancer ID</th>
+                    <th rowspan="2">Activity Class</th>
+                    <th rowspan="2">Accessibility</th>
+                    <th rowspan="2">Gene Symbol</th>
+                    <th rowspan="2">Time Cluster</th>
+                    <th rowspan="2">Immune Process</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in enhancers %}
+                    {% for c in e.conditions %}
+                        {% for g in c.genes %}
+                            <tr>
+                                    <td>
+                                        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.window_start }}-{{ e.window_end }}" target="_blank">
+                                            {{ e.enhancer_id }}
+                                        </a>
+                                    </td>
+                                    <td>{{ e.activity_class or 'N/A' }}</td>
+                                    <td>{{ e.accessibility or 'N/A' }}</td>
+                                    <td>
+                                        <a href="https://flybase.org/reports/{{ g.gene_id }}.html" target="_blank">
+                                        {{ g.gene_symbol or g.gene_id}}
+                                        </a>
+                                    </td>
+                                    <td>{{ g.time_cluster or 'N/A' }}</td>
+                                    <td>{{ g.immune_process or 'N/A' }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% else %}
+    <p style="margin-top: 1em; color: #666;">
+        {% if error_message %}
+            {{ error_message }}
+        {% else %}
+            No enhancers found matching your criteria. Please adjust your filters and try again.
+        {% endif %}
+    </p>
+{% endif %}
