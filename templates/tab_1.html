@@ -2,15 +2,15 @@
 <table id="geneTable" class="display">
   <thead>
     <tr>
-      <th rowspan="2">Enhancer ID</th>
-      <th rowspan="2">Enhancer Length</th>
+        <th rowspan="2">Enhancer ID</th>
+        <th rowspan="2">Enhancer Length</th>
+        <th rowspan="2">Experimental Condition</th>
+        <th rowspan="2">Activity Score</th>
+        <th rowspan="2">Gene Symbol</th>
         <th rowspan="2">Accessibility</th>
-      <th rowspan="2">Experimental Condition</th>
-      <th rowspan="2">Activity Score</th>
-      <th rowspan="2">Gene Symbol</th>
-      <th colspan="3">TPM Values</th>
-      <th rowspan="2">Immune Process</th>
-      <th rowspan="2">Time Cluster</th>
+        <th colspan="3">TPM Values</th>
+        <th rowspan="2">Immune Process</th>
+        <th rowspan="2">Time Cluster</th>
 
     </tr>
     <tr>
@@ -34,7 +34,6 @@
                         {{ e.enhancer_id }}</a>
                 </td>
                 <td rowspan="{{ total_genes }}">{{ e.en_length }}</td>
-                <td rowspan="{{ total_genes }}">{{ e.accessibility or 'Info Unavailable'}}</td>
             {% endif %}
 
             {# Print condition info only once per condition block #}
@@ -43,12 +42,13 @@
               <td rowspan="{{ c.genes|length }}">{{ c.activity }}</td>
             {% endif %}
 
-            <td>{{ g.gene_symbol }}</td>
-            <td>{{ g.tpm_ctrl }}</td>
-            <td>{{ g.tpm_imd }}</td>
-            <td>{{ g.tpm_20e }}</td>
-            <td>{{ g.immune_process or '-' }}</td>
-            <td>{{ g.time_cluster or '-' }}</td>
+              <td>{{ g.gene_symbol or g.gene_id}}</td>
+              <td>{{ g.accessibility or '-'}}</td>
+              <td>{{ g.tpm_ctrl }}</td>
+              <td>{{ g.tpm_imd }}</td>
+              <td>{{ g.tpm_20e }}</td>
+              <td>{{ g.immune_process or '-' }}</td>
+              <td>{{ g.time_cluster or '-' }}</td>
           </tr>
         {% endfor %}
       {% endfor %}

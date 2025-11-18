@@ -72,10 +72,6 @@
         {% endif %}
     {% endfor %}
 
-    {% if chart_data and chart_data|length > 1 %}
-    <div id="activity_chart" data-chart='{{ chart_data|tojson }}'
-         style="width:900px; height:500px; margin-top:2em;"></div>
-    {% endif %}
 
 {% else %}
 <p>No enhancers found matching your criteria.</p>
