@@ -1,15 +1,17 @@
 {% if enhancers %}
-<table>
+<table id="geneTable" class="display">
   <thead>
     <tr>
       <th rowspan="2">Enhancer ID</th>
       <th rowspan="2">Enhancer Length</th>
-      <th rowspan="2">Activity Score</th>
+        <th rowspan="2">Accessibility</th>
       <th rowspan="2">Experimental Condition</th>
+      <th rowspan="2">Activity Score</th>
       <th rowspan="2">Gene Symbol</th>
-        <th colspan="3"><strong>TPM Values</strong></th>
+      <th colspan="3">TPM Values</th>
       <th rowspan="2">Immune Process</th>
       <th rowspan="2">Time Cluster</th>
+
     </tr>
     <tr>
       <th>Control</th>
@@ -20,21 +22,35 @@
 
   <tbody>
     {% for e in enhancers %}
-      {% for g in e.gene_interactions %}
-      <tr>
-        {% if loop.first %}
-          <td rowspan="{{ e.gene_interactions|length }}">{{ e.enhancer_id }}</td>
-          <td rowspan="{{ e.gene_interactions|length }}">{{ e.en_length }}</td>
-          <td rowspan="{{ e.gene_interactions|length }}">{{ e.act_score }}</td>
-          <td rowspan="{{ e.gene_interactions|length }}">{{ e.exp_condition }}</td>
-        {% endif %}
-          <td>{{ g.gene_symbol }}</td>
-          <td>{{ g.tpm_ctrl }}</td>
-          <td>{{ g.tpm_imd }}</td>
-          <td>{{ g.tpm_20e }}</td>
-          <td>{{ g.immune_process or 'None' }}</td>
-          <td>{{ g.time_cluster or 'None' }}</td>
-      </tr>
+      {% set total_genes = e.conditions | map(attribute='genes') | map('length') | sum %}
+      {% set condition_loop = loop %}
+      {% for c in e.conditions %}
+        {% set gene_loop = loop %}
+        {% for g in c.genes %}
+          <tr>
+            {# Print enhancer-level info only on the very first row of this enhancer #}
+            {% if gene_loop.first and loop.first %}
+                <td rowspan="{{ total_genes }}"><a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.window_start }}-{{ e.window_end }}" target="_blank">
+                        {{ e.enhancer_id }}</a>
+                </td>
+                <td rowspan="{{ total_genes }}">{{ e.en_length }}</td>
+                <td rowspan="{{ total_genes }}">{{ e.accessibility or 'Info Unavailable'}}</td>
+            {% endif %}
+
+            {# Print condition info only once per condition block #}
+            {% if loop.first %}
+              <td rowspan="{{ c.genes|length }}">{{ c.exp_condition }}</td>
+              <td rowspan="{{ c.genes|length }}">{{ c.activity }}</td>
+            {% endif %}
+
+            <td>{{ g.gene_symbol }}</td>
+            <td>{{ g.tpm_ctrl }}</td>
+            <td>{{ g.tpm_imd }}</td>
+            <td>{{ g.tpm_20e }}</td>
+            <td>{{ g.immune_process or '-' }}</td>
+            <td>{{ g.time_cluster or '-' }}</td>
+          </tr>
+        {% endfor %}
       {% endfor %}
     {% endfor %}
   </tbody>

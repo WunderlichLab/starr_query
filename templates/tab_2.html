@@ -37,11 +37,12 @@
         <table id="enhancerTable" class="display" style="width:100%; margin-top:1em;">
           <thead>
             <tr>
-              <th>Enhancer Name</th>
-              <th>Enhancer Length</th>
-              <th>Activity Score</th>
-              <th>Condition</th>
-              <th>UCSC View</th>
+                <th>Enhancer Name</th>
+                <th>Enhancer Length</th>
+                <th>Accessibility </th>
+                <th>Distance to Enhancer</th>
+                <th>Activity Score</th>
+                <th>Condition</th>
             </tr>
           </thead>
           <tbody>
@@ -49,18 +50,20 @@
 
             <!-- Enhancer Row -->
             <tr>
-              <td>{{ e.enhancer_name }}</td>
-              <td>{{ e.en_length }}</td>
-              <td>{{ e.act_score }}</td>
-              <td>{{ e.exp_condition }}</td>
-              <td>
-                {% if e.chromosome and e.start and e.end %}
-                  <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.start }}-{{ e.end }}"
-                     target="_blank">View</a>
-                {% else %}
-                  N/A
-                {% endif %}
-              </td>
+                <td>
+                    {% if e.chromosome and e.start and e.end %}
+                        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.start }}-{{ e.end }}" target="_blank">
+                            {{ e.enhancer_id }}
+                        </a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>{{ e.en_length }}</td>
+                <td>{{ e.accessibility or 'Information unavailable'}}</td>
+                <td>{{ e.dist_to_enh or '-'}}</td>
+                <td>{{ e.act_score }}</td>
+                <td>{{ e.exp_condition }}</td>
             </tr>
 
         {% if loop.last %}
