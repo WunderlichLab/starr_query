@@ -28,42 +28,127 @@
             <div class="tab"        data-target="#region-search"><b>Search by Proximity</b></div>
             <div class="tab"        data-target="#gene-search"><b>Search by Genes</b></div>
             <div class="tab"        data-target="#activity-search"><b>Search by Activity Info</b></div>
-            <div class="tab"	    data-target="#help-page"><b>Help Page</b></div>
-
         </div>
 
         <!-- <h1 id="title">Large-scale Enhancer Screen Database</h1> -->
 
         <!-- Introduction -->
-        <div id="introduction" class="tab-content active">         
-            <h4 id="description">
-                This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq datasets from <i>Drosophila melanogaster</i>. It helps explore how enhancers regulate gene expression across different experimental conditions.
-            </h4>
+        <div id="introduction" class="tab-content active">
+            <h2>Welcome!</h2>
 
+            <p id="description">
+                This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene
+                associations using STARR-seq datasets from <i>Drosophila melanogaster</i>.
+                The database helps researchers explore how enhancers regulate gene expression across
+                different experimental conditions (Control, 20E hormone treatment, and IMD immune treatment).
+            </p>
+
+            <h3>What This Website Does</h3>
+            <p>
+                The Large-Scale Enhancer Database integrates high-throughput STARR-seq data with
+                gene expression and functional annotations. It allows you to:
+            </p>
             <ul>
-                <li>Search by enhancer region or gene symbol or ID</li>
-                <li>Filter results by activity score or experimental condition</li>
-                <li>View results in interactive tables and histograms</li>
+                <li><strong>Search by enhancer location:</strong> Find all genes regulated by
+                    enhancers in a specific chromosomal region</li>
+                <li><strong>Search by gene:</strong> Discover all enhancers that regulate a
+                    particular gene across experimental conditions</li>
+                <li><strong>Search by activity profile:</strong> Filter enhancers based on
+                    activity class, accessibility, immune function, and temporal gene expression patterns</li>
+                <li><strong>Apply comprehensive filters:</strong> Refine results by activity scores,
+                    experimental conditions, time clusters, and immune process annotations</li>
+                <li><strong>Export results:</strong> Download results in CSV, TSV, or Excel formats for
+                    further analysis</li>
             </ul>
+
+            <h3>How to Use This Database</h3>
 
             <div class="info-boxes">
                 <div class="info-box" id="enhancerToGeneBox">
                     <h4>Enhancer → Gene</h4>
                     <p>
-                        <b>Input:</b> Chromosome, Start, End <br><br>
-                        <b>Output:</b> A table of all genes linked to enhancers in the specified region. Includes gene symbol, enhancer ID, associated ORF, immune process, time cluster, and other annotations.
+                        <strong>Use case:</strong> You have enhancer coordinates and want to find regulated genes<br><br>
+                        <strong>Steps:</strong>
                     </p>
+                    <ol>
+                        <li>Go to the <strong>"Search by Proximity"</strong> tab</li>
+                        <li>Enter the chromosome (2L, 2R, 3L, 3R, X, Y, or 4)</li>
+                        <li>Enter the enhancer start and end positions</li>
+                        <li>Optionally filter by activity score, condition, time cluster, or immune process</li>
+                        <li>Click "Submit" to see all genes within 15kb of your enhancer region</li>
+                        <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
+                    </ol>
+                    <p><strong>Output:</strong> A sortable table with gene symbols, enhancer IDs, TPM values, immune annotations, and direct links to UCSC Genome Browser.</p>
                 </div>
+
                 <div class="info-box" id="geneToEnhancerBox">
                     <h4>Gene → Enhancer</h4>
                     <p>
-                        <b>Input:</b> One of the following: gene symbol, gene ID, or chromosomal region (chromosome, start, end). <br><br>
-                        <i>Optional filters:</i> activity score threshold, experimental condition.<br><br>
-                        <b>Output:</b> A table of associated enhancers with scores and annotations. If one condition is selected, a histogram of enhancer activity scores is also shown.
+                        <strong>Use case:</strong> You have a gene of interest and want to find its regulatory enhancers<br><br>
+                        <strong>Steps:</strong>
                     </p>
+                    <ol>
+                        <li>Go to the <strong>"Search by Genes"</strong> tab</li>
+                        <li>Enter either a gene symbol (e.g., "Abd-B") or FlyBase ID (e.g., "FBgn0000015")</li>
+                        <li>Set an activity score threshold (default: 500)</li>
+                        <li>Optionally filter by condition, time cluster, or immune process</li>
+                        <li>Click "Submit" to find all enhancers regulating your gene</li>
+                        <li>Download the results table</li>
+                    </ol>
+                    <p><strong>Output:</strong> A table of enhancers with activity scores, accessibility information, distance to gene, and genomic coordinates with browser links.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>Activity Class Search</h4>
+                    <p>
+                        <strong>Use case:</strong> You want to find enhancers with specific regulatory properties<br><br>
+                        <strong>Steps:</strong>
+                    </p>
+                    <ol>
+                        <li>Go to the <strong>"Search by Activity Info"</strong> tab</li>
+                        <li>Select desired filters: activity class, accessibility, time cluster, or immune process</li>
+                        <li>At least one filter is required</li>
+                        <li>Click "Search" to find matching enhancers and their target genes</li>
+                    </ol>
+                    <p><strong>Output:</strong> A comprehensive table showing enhancers grouped by activity class, with associated genes and functional annotations.</p>
                 </div>
             </div>
+
+            <h3>About the Data</h3>
+            <p>The database contains datasets from three experimental conditions:</p>
+            <ul>
+                <li><strong>Control:</strong> Baseline conditions</li>
+                <li><strong>20E:</strong> hormone treatment</li>
+                <li><strong>IMD:</strong> Heat-killed with 20E treatment</li>
+            </ul>
+
+            <p>Each entry includes:</p>
+            <ul>
+                <li>Genomic coordinates of consensus enhancer regions</li>
+                <li>Genes found within 5kb upstream and 15 kb downstream of each enhancer</li>
+                <li>Gene expression levels (TPM values) across conditions</li>
+                <li>Enhancer activity scores  from STARR-seq assays</li>
+                <li>Accessibility information (ATAC-seq derived)</li>
+                <li>Gene annotations: immune pathway, time cluster classification, and distance to enhancer</li>
+                <li>Transcription factor motifs and binding site counts</li>
+            </ul>
+
+            <h3>Tips for Effective Searching</h3>
+            <ul>
+                <li><strong>Sorting:</strong> Click table headers to sort by any column</li>
+                <li><strong>Filtering:</strong> Use the search box in tables to filter by text</li>
+                <li><strong>Activity scores:</strong> Higher scores indicate stronger enhancer activity</li>
+                <li><strong>Combinations:</strong> You can combine multiple filters for more specific queries</li>
+            </ul>
+
+            <h3>Questions or Issues?</h3>
+            <p>For questions about this database or the underlying data, please contact the Wunderlich Lab.</p>
+
+            <h3>Acknowledgements</h3>
+            <p>This database was created for and with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianne Cohen for their support and guidance.</p>
+            <p>This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University, facilitated by Dr. Gary Benson.</p>
         </div>
+
 
         <!-- Tab1 -->
         <div id="region-search" class="tab-content">
@@ -71,31 +156,68 @@
             <h4>Please specify the chromosomal region that contains your enhancer(s) of interest (e.g. 2L, start: 10426653, end: 10427192).</h4>
             <!-- form -->
             <form id="enhancer-form" action="{{ url_for('find_gene') }}" method="POST">
-                <label>
-                    Chromosome:
-                    <select name="chr" id="enhancer_chr">
-                        <option value="2L">2L</option>
-                        <option value="2R">2R</option>
-                        <option value="3L">3L</option>
-                        <option value="3R">3R</option>
-                        <option value="4">4</option>
-                        <option value="X">X</option>
-                        <option value="Y">Y</option>
-                    </select>
-                </label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <label>
+                        Chromosome:<br>
+                        <select name="chr" id="enhancer_chr">
+                            <option value="2L">2L</option>
+                            <option value="2R">2R</option>
+                            <option value="3L">3L</option>
+                            <option value="3R">3R</option>
+                            <option value="4">4</option>
+                            <option value="X">X</option>
+                            <option value="Y">Y</option>
+                        </select>
+                    </label>
 
-                <label>
-                    Start:
-                    <input type="number" id="enhancer_start" name="start">
-                </label>
+                    <label>
+                        Start:
+                        <br>
+                        <input type="number" id="enhancer_start" name="start">
+                    </label>
 
-                <label>
-                    End:
-                    <input type="number" id="enhancer_end" name="end">
-                </label>
+                    <label>
+                        End:<br>
+                        <input type="number" id="enhancer_end" name="end">
+                    </label>
+
+                    <label>
+                        Min Activity Score:
+                        <input type="number" name="activity_score_min" value="0" min="0">
+                    </label>
+
+                    <label>
+                        Condition:
+                        <select name="condition">
+                            <option value="">-- All --</option>
+                            <option value="Control">Control</option>
+                            <option value="IMD">IMD</option>
+                            <option value="20E">20E</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Time Cluster:
+                        <select name="time_cluster">
+                            <option value="">-- All --</option>
+                            {% for tc in filter_options.time_clusters %}
+                                <option value="{{ tc }}">{{ tc }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Immune Process:
+                        <select name="immune_process">
+                            <option value="">-- All --</option>
+                            {% for ip in filter_options.immune_processes %}
+                                <option value="{{ ip }}">{{ ip }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
 
                 <button type="submit">Submit</button>
-
             </form>
 
             <!-- results will be displayed here -->
@@ -108,49 +230,58 @@
         <!-- Tab2 -->
         <div id="gene-search" class="tab-content">
             <h4>
-            Enter a gene (symbol eg “Abd-B” or ID eg “FBgn0000119”)
+            Enter a gene (symbol eg "Abd-B" or ID eg "FBgn0000119")
             </h4>
             <form id="gene-form" action="{{ url_for('find_enhancer') }}" method="POST">
-            <div style="display:flex; gap:2rem; margin-bottom:1rem;">
-                <label>
-                    Gene Symbol:<br><input type="text" name="symbol">
-                </label>
+                <div style="display:flex; gap:2rem; margin-bottom:1rem;">
+                    <label>
+                        Gene Symbol:<br><input type="text" name="symbol">
+                    </label>
 
-                <span style="align-self:center;font-weight:bold;">
-                    or
-                </span>
+                    <span style="align-self:center;font-weight:bold;">
+                        or
+                    </span>
 
-                <label>
-                    Gene ID:<br><input type="text" name="geneid">
-                </label>
-            </div>
+                    <label>
+                        Gene ID:<br><input type="text" name="geneid">
+                    </label>
+                </div>
 
-            <div style="margin-bottom:1rem;">
-                <label>
-                Activity Score Threshold:
-                <input type="number" name="activity_score" value="500" min="0" max="1000">
-                </label>
-                <label style="margin-left:2rem;">
-                Condition:
-                <select name="condition">
-                    <option value="">-- All --</option>
-                    <option value="Control">Control</option>
-                    <option value="IMD">IMD</option>
-                    <option value="20E">20E</option>
-                </select>
-                </label>
-                <label style="margin-left:2rem;">
-                Graphic Output:
-                <select name="chartTypeSelect" id="chartTypeSelect">
-                    <option value="auto">Auto</option>                    
-                    <option value="histogram">Histogram</option>
-                    <option value="bar">Barplot</option>
-                </select>
-                </label>
-            </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom:1rem;">
+                    <label>
+                        Activity Score Threshold:
+                        <input type="number" name="activity_score" value="500" min="0">
+                    </label>
+                    <label>
+                        Condition:
+                        <select name="condition">
+                            <option value="">-- All --</option>
+                            <option value="Control">Control</option>
+                            <option value="IMD">IMD</option>
+                            <option value="20E">20E</option>
+                        </select>
+                    </label>
+                    <label>
+                        Time Cluster:
+                        <select name="time_cluster">
+                            <option value="">-- All --</option>
+                            {% for tc in filter_options.time_clusters %}
+                                <option value="{{ tc }}">{{ tc }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        Immune Process:
+                        <select name="immune_process">
+                            <option value="">-- All --</option>
+                            {% for ip in filter_options.immune_processes %}
+                                <option value="{{ ip }}">{{ ip }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
 
-            <button type="submit">Submit</button>
-            
+                <button type="submit">Submit</button>
             </form>
             <div id="gene-results"></div>
         </div>
@@ -173,19 +304,13 @@
                     </label>
 
                     <label>
-                        Experimental Condition:
+                        Accessibility:
                         <select name="condition" id="condition">
                             <option value="">-- All Conditions --</option>
                             {% for cond in filter_options.conditions %}
                                 <option value="{{ cond }}">{{ cond }}</option>
                             {% endfor %}
                         </select>
-                    </label>
-
-                    <label>
-                        Minimum Activity Score:
-                        <input type="number" name="activity_score_min" id="activity_score_min"
-                               placeholder="0" value="0" min="0" step="1">
                     </label>
 
                     <label>
@@ -227,48 +352,6 @@
         </div>
 
 
-        <!-- Help Page -->
-	    <div id="help-page" class="tab-content">
-	    <h2>Help Page</h2>
-	    <p>The Large-Scale Enhancer Database contains STARR-seq data from the Wunderlich Lab measuring <i>Drosophila</i> enhancer activity and associated gene expression across different experimental conditions.</p>
-	    <p>This database allows researchers to query for gene-enhancer associations and visualize enhancer activity to explore regulatory mechanisms in immune responses.</p>
-	    <h3>About the Data:</h3>
-	    <p>The database contains datasets from three different experimental conditions:</p> 
-	    <ul>
-	    	<li>Control</li>
-		<li>Hormone Treatment: 20E</li>
-		<li>Immune Treatment: Heat-killed <i>S. marcescense</i> (IMD) also treated with 20E</li>
-	    </ul>
-	    <p>Each of these datasets contain the following fields:</p>
-	    <ul>
-		<li>Genomic coordinates of consensus enhancer regions</li>
-		<li>Genes found within 15kb of enhancer regions</li>
-		<li>Gene expression changes (LogFC values) derived from RNA-seq experiments</li> 
-		<ul>
-		      <li>LogFC IMD vs Control</li>
-		      <li>LogFC IMD vs 20E</li>
-		      <li>LogFC 20E vs Control</li>
-		</ul>
-	 	<li>Immune pathway annotations of genes</li>
-		<li>Time cluster of genes as classified by Schlamp et. al</li>
-		<li>Transcription factor motifs of enhancers</li>
-		<li>Total number of binding sites for each enhancer</li>
-		<li>Enhancer activity scores as measured by STARR-seq (currently ranges from 363 to 1000)</li> 
-	    </ul>
-	    <h3>How to use:</h3>
-	    <h4 id="go-to-gene" style="cursor:pointer;">Enhancer &rarr; Gene</h4>
-	    <p>To search for genes associated with enhancer region, specify the chromosome using the drop down menu, enter enhancer start and end coordinates, and click submit. This will display the Gene Symbol, FlyBase Gene ID, Enhancer ID, Gene Coordinates, Immune Process, Time Cluster, and a link to the FlyBase entry.</p> 
-	    <p>The table is sortable for each column and can be filtered for a particular string of letters or numbers; for example, gene symbols that contain "ln" or a specific time cluster or immune process.</p>
- 	    <p>The results are downloadable in CSV, TSV, and Excel (XLSX) format.
-        <h4 id="go-to-enhancer" style="cursor:pointer;">Gene &rarr; Enhancer</h4>
-	    <p>There are multiple ways to search for enhancer regions. Either enter a gene symbol, FlyBase gene ID, or chromsome coordinates, specifying the chromosome using the drop down menu. Then, choose the activity score threshold (filters out enhancers with activity scores less than this number) and choose an experimental condition using the drop down menu.</p>
-        <p>This will display the Enhancer Name, FlyBase Gene ID, Activity Score, Condition, Chromosome, Enhancer Coordinates, and link to UCSC View. Again, this table is sortable by each column and can be filtered by a search string of letters. The results can be downloaded in a CSV, TSV, or Excel (XLSX) format.</p>
-        <p>Additionally, this page visualizes enhancer activity score distribution in a histogram which can be helpful when searching for multiple enhancer regions.</p>
-	    <h3>Acknowledgements</h3>
-	    <p>This database was created for and with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianne Cohen for their support and hope that this website will be useful for the members of the Wunderlich Lab.</p>
-        <p> This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University facilitated by Dr. Gary Benson.</p>
-	</div>	
-
 
 
 
@@ -301,67 +384,17 @@
 
         <!-- 6. Custom initialization -->
         <script>
-            google.charts.load('current',{packages:['corechart']});
-
-            function drawEnhancerChart() {
-                const c = document.getElementById('activity_chart');
-                if (!c) return;
-                const dataArr = JSON.parse(c.dataset.chart);
-                for (let i = 1; i < dataArr.length; i++) {
-                    dataArr[i][0] = parseFloat(dataArr[i][0]);
-                }
-                const scores = dataArr.slice(1).map(row => row[0]);
-                const uniqueScores = [...new Set(scores)];
-                const chartType = document.getElementById('chartTypeSelect')?.value || 'auto';
-                const forceBar = uniqueScores.length === 1;
-                if (chartType === 'bar' || (chartType === 'auto' && forceBar)) {
-                    const grouped = {};
-                    for (let i = 1; i < dataArr.length; i++) {
-                        const row = dataArr[i];
-                        const enhancer = row[1] || `Enhancer ${i}`;
-                        const condition = row[2] || 'Condition';
-                        const key = `${enhancer} (${condition})`;
-                        if (!grouped[key]) grouped[key] = row[0];
-                    }
-                    const barData = google.visualization.arrayToDataTable(
-                        [['Enhancer (Condition)', 'Activity Score']].concat(
-                            Object.entries(grouped)
-                        )
-                    );
-                    const barChart = new google.visualization.ColumnChart(c);
-                    barChart.draw(barData, {
-                        title: 'Enhancer Activity Score (Bar Chart)',
-                        legend: { position: 'none' },
-                        hAxis: { title: 'Enhancer (Condition)' },
-                        vAxis: { title: 'Activity Score' },
-                        isStacked: false,
-                        colors: ['#5f9ea0'],
-                        backgroundColor: { fill: '#f4f8f9' }
-                    });
-                } else {
-                    const data = google.visualization.arrayToDataTable(dataArr);
-                    const chart = new google.visualization.Histogram(c);
-                    let options = {
-                        title: 'Enhancer Activity Score Distribution',
-                        legend: { position: 'none' },
-                        histogram: { bucketSize: 50 },
-                        hAxis: { title: 'Activity Score' },
-                        vAxis: { title: 'Frequency' },
-                        colors: ['#5f9ea0'],
-                        backgroundColor: { fill: '#f4f8f9' }
-                    };
-                    chart.draw(data, options);
-                }
-            }
-
             // DOM ready
             $(function(){
-            // Tab switching
+            // Tab switching with smooth scroll
             $('.tab').click(function(){
                 $('.tab').removeClass('active');
                 $(this).addClass('active');
                 $('.tab-content').removeClass('active');
-                $($(this).data('target')).addClass('active');
+                const target = $($(this).data('target'));
+                target.addClass('active');
+                // Smooth scroll to top of page
+                $('html, body').animate({ scrollTop: 0 }, 600);
             });
 
             // Enhancer→Gene AJAX + geneTable DataTable
@@ -369,26 +402,31 @@
                 e.preventDefault();
                 $.post(this.action, $(this).serialize())
                 .done(html => {
-                $('#enhancer-results').html(html);
+                    $('#enhancer-results').html(html);
 
-                if ($.fn.DataTable.isDataTable('#geneTable')) {
-                    $('#geneTable').DataTable().destroy();
-                }
-                $('#geneTable').DataTable({
-                    dom: 'Bfrtip',
-                    buttons: [
-                    'csvHtml5',
-                    { extend:'csvHtml5', text:'TSV', fieldSeparator:'\t', extension:'.tsv', bom:true },
-                    'excelHtml5',
-                    ],
-                    pageLength: 25,
-                    lengthMenu: [10,25,50,100],
-                    order: [[0,'asc']]
-                });
+                    if ($.fn.DataTable.isDataTable('#geneTable')) {
+                        $('#geneTable').DataTable().destroy();
+                    }
+                    $('#geneTable').DataTable({
+                        dom: 'Bfrtip',
+                        buttons: [
+                            'csvHtml5',
+                            { extend:'csvHtml5', text:'TSV', fieldSeparator:'\t', extension:'.tsv', bom:true },
+                            'excelHtml5',
+                        ],
+                        pageLength: 15,
+                        lengthMenu: [10, 15, 25, 50, 100],
+                        order: [[0,'asc']],
+                        scrollY: '500px',
+                        scrollCollapse: true
+                    });
+
+                    // Smooth scroll to results
+                    $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
                 });
             });
 
-            // Gene→Enhancer AJAX + enhancerTable DataTable + Chart
+            // Gene→Enhancer AJAX + enhancerTable DataTable (NO CHART)
             $('#gene-form').submit(function(e){
                 e.preventDefault();
                 $.post(this.action, $(this).serialize())
@@ -399,8 +437,6 @@
                         $('#enhancerTable').DataTable().clear().destroy();
                     }
 
-                    drawEnhancerChart();
-
                     setTimeout(() => {
                         $('#enhancerTable').DataTable({
                             dom: 'Bfrtip',
@@ -409,13 +445,52 @@
                                 { extend: 'csvHtml5', text: 'TSV', fieldSeparator: '\t', extension: '.tsv', bom: true },
                                 'excelHtml5'
                             ],
-                            pageLength: 25,
-                            lengthMenu: [10, 25, 50, 100],
-                            order: [[2, 'desc']]
+                            pageLength: 15,
+                            lengthMenu: [10, 15, 25, 50, 100],
+                            order: [[4, 'desc']],
+                            scrollY: '500px',
+                            scrollCollapse: true
                         });
+
+                        // Smooth scroll to results
+                        $('html, body').animate({ scrollTop: $('#gene-results').offset().top - 100 }, 600);
                     }, 300);
                 }).fail(() => alert('Search failed. Please try again.'));
             });
+
+            // Activity Class Search AJAX + DataTable
+            $('#activity-form').submit(function(e){
+                e.preventDefault();
+                $.post(this.action, $(this).serialize())
+                .done(html => {
+                    $('#activity-results').html(html);
+
+                    if ($.fn.DataTable.isDataTable('#activityClassTable')) {
+                        $('#activityClassTable').DataTable().clear().destroy();
+                    }
+
+                    setTimeout(() => {
+                        if ($('#activityClassTable').length) {
+                            $('#activityClassTable').DataTable({
+                                dom: 'Bfrtip',
+                                buttons: [
+                                    'csvHtml5',
+                                    { extend: 'csvHtml5', text: 'TSV', fieldSeparator: '\t', extension: '.tsv', bom: true },
+                                    'excelHtml5'
+                                ],
+                                pageLength: 15,
+                                lengthMenu: [10, 15, 25, 50, 100],
+                                order: [[0, 'asc']],
+                                scrollX: true,
+                                scrollY: '500px',
+                                scrollCollapse: true
+                            });
+                        }
+
+                        // Smooth scroll to results
+                        $('html, body').animate({ scrollTop: $('#activity-results').offset().top - 100 }, 600);
+                    }, 300);
+                }).fail(() => alert('Search failed. Please try again.'));
             });
 
             $('#enhancerToGeneBox').click(function() {
@@ -431,39 +506,7 @@
             $('#go-to-enhancer').click(function() {
                 $('.tab[data-target="#gene-search"]').click();
             });
-
-
-            // Activity Class Search AJAX + DataTable
-            $('#activity-form').submit(function(e){
-                e.preventDefault();
-                $.post(this.action, $(this).serialize())
-                .done(html => {
-                    $('#activity-results').html(html);
-
-                    // Initialize DataTable if table exists
-                    if ($.fn.DataTable.isDataTable('#activityClassTable')) {
-                        $('#activityClassTable').DataTable().clear().destroy();
-                    }
-
-                    // Wait a moment for DOM to be ready, then initialize DataTable
-                    setTimeout(() => {
-                        if ($('#activityClassTable').length) {
-                            $('#activityClassTable').DataTable({
-                                dom: 'Bfrtip',
-                                buttons: [
-                                    'csvHtml5',
-                                    { extend: 'csvHtml5', text: 'TSV', fieldSeparator: '\t', extension: '.tsv', bom: true },
-                                    'excelHtml5'
-                                ],
-                                pageLength: 25,
-                                lengthMenu: [10, 25, 50, 100],
-                                order: [[8, 'desc']], // Sort by Activity Score by default
-                                scrollX: true // Enable horizontal scrolling for wide tables
-                            });
-                        }
-                    }, 300);
-                }).fail(() => alert('Search failed. Please try again.'));
-            });
+        });
         </script>
     </body>
 </html>
