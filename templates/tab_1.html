@@ -38,15 +38,15 @@
 
             {# Print condition info only once per condition block #}
             {% if loop.first %}
-              <td rowspan="{{ c.genes|length }}">{{ c.exp_condition }}</td>
-              <td rowspan="{{ c.genes|length }}">{{ c.activity }}</td>
+              <td rowspan="{{ c.genes|length }}">{{ c.exp_condition or '-' }}</td>
+              <td rowspan="{{ c.genes|length }}">{{ c.activity or ('-' if c.activity == 0) }}</td>
             {% endif %}
 
-              <td>{{ g.gene_symbol or g.gene_id}}</td>
+              <td>{{ g.gene_symbol or g.gene_id or '-'}}</td>
               <td>{{ g.accessibility or '-'}}</td>
-              <td>{{ g.tpm_ctrl }}</td>
-              <td>{{ g.tpm_imd }}</td>
-              <td>{{ g.tpm_20e }}</td>
+              <td>{{ g.tpm_ctrl or '-'}}</td>
+              <td>{{ g.tpm_imd or '-' }}</td>
+              <td>{{ g.tpm_20e or '-' }}</td>
               <td>{{ g.immune_process or '-' }}</td>
               <td>{{ g.time_cluster or '-' }}</td>
           </tr>
