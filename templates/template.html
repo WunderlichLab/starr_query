@@ -250,7 +250,7 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom:1rem;">
                     <label>
                         Activity Score Threshold:
-                        <input type="number" name="activity_score" value="500" min="0">
+                        <input type="number" name="activity_score" value="0" min="0">
                     </label>
                     <label>
                         Condition:
@@ -296,7 +296,7 @@
                     <label>
                         Activity Class:
                         <select name="activity_class" id="activity_class">
-                            <option value="">-- All Classes --</option>
+                            <option value="">-- Activity Class --</option>
                             {% for ac in filter_options.activity_classes %}
                                 <option value="{{ ac }}">{{ ac }}</option>
                             {% endfor %}
@@ -305,10 +305,10 @@
 
                     <label>
                         Accessibility:
-                        <select name="condition" id="condition">
-                            <option value="">-- All Conditions --</option>
-                            {% for cond in filter_options.conditions %}
-                                <option value="{{ cond }}">{{ cond }}</option>
+                        <select name="accessibility" id="accessibility">
+                            <option value="">-- Accessibility --</option>
+                            {% for access in filter_options.accessibilities %}
+                                <option value="{{ access }}">{{ access }}</option>
                             {% endfor %}
                         </select>
                     </label>
@@ -316,7 +316,7 @@
                     <label>
                         Time Cluster:
                         <select name="time_cluster" id="time_cluster">
-                            <option value="">-- All Time Clusters --</option>
+                            <option value="">-- Time Cluster --</option>
                             {% for tc in filter_options.time_clusters %}
                                 <option value="{{ tc }}">{{ tc }}</option>
                             {% endfor %}
@@ -325,9 +325,9 @@
 
                     <label>
                         Immune Process:
-                        <select name="immune_process" id="immune_process">
-                            <option value="">-- All Immune Processes --</option>
-                            {% for ip in filter_options.immune_processes %}
+                        <select name="broad_immune_roles" id="broad_immune_roles">
+                            <option value="">-- Broad Immune Role --</option>
+                            {% for ip in filter_options.broad_immune_roles %}
                                 <option value="{{ ip }}">{{ ip }}</option>
                             {% endfor %}
                         </select>

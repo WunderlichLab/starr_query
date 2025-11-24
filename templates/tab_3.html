@@ -9,38 +9,28 @@
         <table id="activityClassTable" class="display" style="width:100%;">
             <thead>
                 <tr>
-                    <th rowspan="2">Enhancer ID</th>
+                    <th rowspan="2">Enhancer</th>
                     <th rowspan="2">Activity Class</th>
                     <th rowspan="2">Accessibility</th>
                     <th rowspan="2">Gene Symbol</th>
+                    <th rowspan="2">Distance to Enhancer</th>
                     <th rowspan="2">Time Cluster</th>
-                    <th rowspan="2">Immune Process</th>
+                    <th rowspan="2">Broad Immune Role</th>
                 </tr>
             </thead>
+            {% for e in enhancers %}
             <tbody>
-                {% for e in enhancers %}
-                    {% for c in e.conditions %}
-                        {% for g in c.genes %}
-                            <tr>
-                                    <td>
-                                        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.window_start }}-{{ e.window_end }}" target="_blank">
-                                            {{ e.enhancer_id }}
-                                        </a>
-                                    </td>
-                                    <td>{{ c.activity_class or '-' }}</td>
-                                    <td>{{ g.accessibility or '-' }}</td>
-                                    <td>
-                                        <a href="https://flybase.org/reports/{{ g.gene_id }}.html" target="_blank">
-                                        {{ g.gene_symbol or g.gene_id}}
-                                        </a>
-                                    </td>
-                                    <td>{{ g.time_cluster or '-' }}</td>
-                                    <td>{{ g.immune_process or '-' }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% endfor %}
-                {% endfor %}
+            <tr>
+                <td>{{ e.enhancer_name }}</td>
+                <td>{{ e.activity_class }}</td>
+                <td>{{ e.accessibility }}</td>
+                <td>{{ e.gene_symbol or e.gene_id or 'N/A'}}</td>
+                <td>{{ e.dist_to_enh }}</td>
+                <td>{{ e.time_cluster }}</td>
+                <td>{{ e.broad_immune_role }}</td>
+            </tr>
             </tbody>
+            {% endfor %}
         </table>
     </div>
 
