@@ -30,17 +30,45 @@
             <div class="tab"        data-target="#activity-search"><b>Search by Activity Info</b></div>
         </div>
 
-        <!-- <h1 id="title">Large-scale Enhancer Screen Database</h1> -->
-
         <!-- Introduction -->
         <div id="introduction" class="tab-content active">
-            <h2>Welcome!</h2>
+            <h2>Drosophila Immune Enhancer Atlas</h2>
+
+            <div style="background-color: #f0f8ff; padding: 1.5rem; border-left: 4px solid #5f9ea0; margin-bottom: 2rem;">
+                <h3 style="margin-top: 0;">About This Resource</h3>
+                <p><strong>Citation:</strong> Cohen, L.B., Hadzic, T., Sauer, C., Gibbs, J.R., & Wunderlich, Z. (2025).
+                <em>A genome-wide survey reveals a diverse array of enhancers coordinate the Drosophila innate immune response</em>.
+                bioRxiv. <a href="https://doi.org/10.1101/2025.09.24.678314" target="_blank">https://doi.org/10.1101/2025.09.24.678314</a></p>
+
+                <details style="margin-top: 1rem;">
+                    <summary style="cursor: pointer; font-weight: bold; color: #5f9ea0;">Show Abstract</summary>
+                    <p style="margin-top: 1rem; text-align: justify;">
+                        To defend against microbes, animals regulate a complex immune response. The <em>Drosophila</em> innate immune
+                        system deploys a large transcriptional induction of signaling proteins, anti-microbial effectors, and other
+                        critical immune factors. This transcriptional response is encoded in enhancers, cis-regulatory sequences that
+                        modulate gene expression by binding transcription factors (TFs). While enhancers and transcription factor
+                        binding sites (TFBS) have been identified for several immune responsive genes in <em>Drosophila</em>, most
+                        enhancers that regulate immune-induced genes are unknown. By identifying enhancers, we can understand how
+                        their composition controls expression and contributes to infection outcome. We employed STARR-seq
+                        (Self Transcribing Active Regulatory-Region sequencing) in a hemocyte-like cell line to identify
+                        immune-specific enhancers across the <em>D. melanogaster</em> genome and performed ATAC-seq in hemocytes
+                        extracted from adult flies to assess the chromatin state of these enhancers before and after immune stimulus.
+                        We identified thousands of enhancers responsive to IMD stimulation, one of the two primary immune signaling
+                        pathways in <em>Drosophila</em>. As expected, immune enhancers are enriched for motifs of Relish, an NF-κB
+                        factor, and Kay/Jra, a bZip heterodimer pair, involved in the Imd and JNK pathways respectively, compared
+                        to enhancers active in unstimulated cells. However, when grouping enhancers by their target gene's expression
+                        timing or functional role or by the enhancers' chromatin accessibility pre- or post-stimulus, different groups
+                        of TFBS motifs are enriched, suggesting distinct regulatory logic for different parts of the immune response.
+                        Identification and characterization of the diverse array of enhancers that regulate the innate immune response
+                        expands our understanding of how animals fight infections.
+                    </p>
+                </details>
+            </div>
 
             <p id="description">
-                This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene
-                associations using STARR-seq datasets from <i>Drosophila melanogaster</i>.
-                The database helps researchers explore how enhancers regulate gene expression across
-                different experimental conditions (Control, 20E hormone treatment, and IMD immune treatment).
+                This is the Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq
+                datasets from <i>Drosophila melanogaster</i>. The database helps researchers explore how enhancers regulate gene
+                expression across different experimental conditions (Control, 20E hormone treatment, and HKSM immune treatment).
             </p>
 
             <h3>What This Website Does</h3>
@@ -119,7 +147,7 @@
             <ul>
                 <li><strong>Control:</strong> Baseline conditions</li>
                 <li><strong>20E:</strong> hormone treatment</li>
-                <li><strong>IMD:</strong> Heat-killed with 20E treatment</li>
+                <li><strong>HKSM:</strong> Heat-killed <i>S. marcescens</i> with 20E treatment</li>
             </ul>
 
             <p>Each entry includes:</p>
@@ -127,11 +155,22 @@
                 <li>Genomic coordinates of consensus enhancer regions</li>
                 <li>Genes found within 5kb upstream and 15 kb downstream of each enhancer</li>
                 <li>Gene expression levels (TPM values) across conditions</li>
-                <li>Enhancer activity scores  from STARR-seq assays</li>
+                <li>Enhancer activity scores from STARR-seq assays</li>
                 <li>Accessibility information (ATAC-seq derived)</li>
                 <li>Gene annotations: immune pathway, time cluster classification, and distance to enhancer</li>
                 <li>Transcription factor motifs and binding site counts</li>
             </ul>
+
+            <h3>Activity Class Distribution</h3>
+            <div style="text-align: center; margin: 2rem 0;">
+                <img src="{{ url_for('static', filename='images/activity_class_venn.png') }}"
+                     alt="Venn Diagram showing enhancer activity class distribution"
+                     style="max-width: 50%; height: auto; border: 1px solid #ddd; border-radius: 8px; padding: 1rem;">
+                <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;">
+                    Distribution of enhancers across different activity classes. Overlapping regions show enhancers
+                    active in multiple conditions.
+                </p>
+            </div>
 
             <h3>Tips for Effective Searching</h3>
             <ul>
@@ -152,14 +191,15 @@
 
         <!-- Tab1 -->
         <div id="region-search" class="tab-content">
+            <h4>Search by chromosomal region OR enhancer name</h4>
+            <p style="font-size: 0.9em; color: #666;">Example coordinates: 2L, start: 10426653, end: 10427192 | Example enhancer: 2L:484243-485063</p>
 
-            <h4>Please specify the chromosomal region that contains your enhancer(s) of interest (e.g. 2L, start: 10426653, end: 10427192).</h4>
-            <!-- form -->
             <form id="enhancer-form" action="{{ url_for('find_gene') }}" method="POST">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
                     <label>
                         Chromosome:<br>
                         <select name="chr" id="enhancer_chr">
+                            <option value="">-- Select --</option>
                             <option value="2L">2L</option>
                             <option value="2R">2R</option>
                             <option value="3L">3L</option>
@@ -171,16 +211,30 @@
                     </label>
 
                     <label>
-                        Start:
-                        <br>
-                        <input type="number" id="enhancer_start" name="start">
+                        Start:<br>
+                        <input type="number" id="enhancer_start" name="start" placeholder="e.g., 10426653">
                     </label>
 
                     <label>
                         End:<br>
-                        <input type="number" id="enhancer_end" name="end">
+                        <input type="number" id="enhancer_end" name="end" placeholder="e.g., 10427192">
                     </label>
+                </div>
 
+                <div style="margin: 1rem 0; text-align: center; font-weight: bold; color: #666;">
+                    - OR -
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label>
+                        Enhancer Name:<br>
+                        <input type="text" name="enhancer_name" id="enhancer_name"
+                               placeholder="e.g., 2L:484243-485063"
+                               style="width: 100%; max-width: 400px;">
+                    </label>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; border-top: 1px solid #ddd; padding-top: 1rem;">
                     <label>
                         Min Activity Score:
                         <input type="number" name="activity_score_min" value="0" min="0">
@@ -188,17 +242,17 @@
 
                     <label>
                         Condition:
-                        <select name="condition">
+                        <select name="condition" id="tab1_condition">
                             <option value="">-- All --</option>
-                            <option value="Control">Control</option>
-                            <option value="IMD">IMD</option>
-                            <option value="20E">20E</option>
+                            {% for c in filter_options.conditions %}
+                                <option value="{{ c }}">{{ c }}</option>
+                            {% endfor %}
                         </select>
                     </label>
 
                     <label>
                         Time Cluster:
-                        <select name="time_cluster">
+                        <select name="time_cluster" id="tab1_time_cluster">
                             <option value="">-- All --</option>
                             {% for tc in filter_options.time_clusters %}
                                 <option value="{{ tc }}">{{ tc }}</option>
@@ -208,7 +262,7 @@
 
                     <label>
                         Immune Process:
-                        <select name="immune_process">
+                        <select name="immune_process" id="tab1_immune_process">
                             <option value="">-- All --</option>
                             {% for ip in filter_options.immune_processes %}
                                 <option value="{{ ip }}">{{ ip }}</option>
@@ -220,50 +274,43 @@
                 <button type="submit">Submit</button>
             </form>
 
-            <!-- results will be displayed here -->
-            <div id="enhancer-results">
-
-            </div>
-
+            <div id="enhancer-results"></div>
         </div>
 
         <!-- Tab2 -->
         <div id="gene-search" class="tab-content">
-            <h4>
-            Enter a gene (symbol eg "Abd-B" or ID eg "FBgn0000119")
-            </h4>
+            <h4>Enter a gene (symbol eg "Abd-B" or ID eg "FBgn0000119")</h4>
+
             <form id="gene-form" action="{{ url_for('find_enhancer') }}" method="POST">
                 <div style="display:flex; gap:2rem; margin-bottom:1rem;">
                     <label>
-                        Gene Symbol:<br><input type="text" name="symbol">
+                        Gene Symbol:<br><input type="text" name="symbol" id="gene_symbol">
                     </label>
 
-                    <span style="align-self:center;font-weight:bold;">
-                        or
-                    </span>
+                    <span style="align-self:center;font-weight:bold;">or</span>
 
                     <label>
-                        Gene ID:<br><input type="text" name="geneid">
+                        Gene ID:<br><input type="text" name="geneid" id="gene_id">
                     </label>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom:1rem;">
                     <label>
                         Activity Score Threshold:
-                        <input type="number" name="activity_score" value="0" min="0">
+                        <input type="number" name="activity_score" id="tab2_activity_score" value="0" min="0">
                     </label>
                     <label>
                         Condition:
-                        <select name="condition">
+                        <select name="condition" id="tab2_condition">
                             <option value="">-- All --</option>
-                            <option value="Control">Control</option>
-                            <option value="IMD">IMD</option>
-                            <option value="20E">20E</option>
+                            {% for c in filter_options.conditions %}
+                                <option value="{{ c }}">{{ c }}</option>
+                            {% endfor %}
                         </select>
                     </label>
                     <label>
                         Time Cluster:
-                        <select name="time_cluster">
+                        <select name="time_cluster" id="tab2_time_cluster">
                             <option value="">-- All --</option>
                             {% for tc in filter_options.time_clusters %}
                                 <option value="{{ tc }}">{{ tc }}</option>
@@ -272,7 +319,7 @@
                     </label>
                     <label>
                         Immune Process:
-                        <select name="immune_process">
+                        <select name="immune_process" id="tab2_immune_process">
                             <option value="">-- All --</option>
                             {% for ip in filter_options.immune_processes %}
                                 <option value="{{ ip }}">{{ ip }}</option>
@@ -283,6 +330,7 @@
 
                 <button type="submit">Submit</button>
             </form>
+
             <div id="gene-results"></div>
         </div>
 
@@ -292,10 +340,9 @@
 
             <form id="activity-form" action="{{ url_for('activity_class_search') }}" method="POST">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-
                     <label>
                         Activity Class:
-                        <select name="activity_class" id="activity_class">
+                        <select name="activity_class" id="tab3_activity_class">
                             <option value="">-- Activity Class --</option>
                             {% for ac in filter_options.activity_classes %}
                                 <option value="{{ ac }}">{{ ac }}</option>
@@ -305,7 +352,7 @@
 
                     <label>
                         Accessibility:
-                        <select name="accessibility" id="accessibility">
+                        <select name="accessibility" id="tab3_accessibility">
                             <option value="">-- Accessibility --</option>
                             {% for access in filter_options.accessibilities %}
                                 <option value="{{ access }}">{{ access }}</option>
@@ -315,7 +362,7 @@
 
                     <label>
                         Time Cluster:
-                        <select name="time_cluster" id="time_cluster">
+                        <select name="time_cluster" id="tab3_time_cluster">
                             <option value="">-- Time Cluster --</option>
                             {% for tc in filter_options.time_clusters %}
                                 <option value="{{ tc }}">{{ tc }}</option>
@@ -324,11 +371,11 @@
                     </label>
 
                     <label>
-                        Immune Process:
-                        <select name="broad_immune_roles" id="broad_immune_roles">
+                        Broad Immune Role:
+                        <select name="broad_immune_role" id="tab3_broad_immune_role">
                             <option value="">-- Broad Immune Role --</option>
-                            {% for ip in filter_options.broad_immune_roles %}
-                                <option value="{{ ip }}">{{ ip }}</option>
+                            {% for bir in filter_options.broad_immune_roles %}
+                                <option value="{{ bir }}">{{ bir }}</option>
                             {% endfor %}
                         </select>
                     </label>
@@ -338,175 +385,209 @@
                 <button type="reset" style="margin-left: 1rem;">Clear Filters</button>
             </form>
 
-            <!-- Error message display -->
-            {% if error_message %}
-                <div style="color: #d32f2f; background-color: #ffebee; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
-                    {{ error_message }}
-                </div>
-            {% endif %}
-
-            <!-- Results display -->
-            <div id="activity-results" style="margin-top: 2rem;">
-
-            </div>
+            <div id="activity-results" style="margin-top: 2rem;"></div>
         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- JS Libraries & Custom Script (in correct order) -->
-        <!-- 1. jQuery -->
+        <!-- JS Libraries -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <!-- 2. DataTables core -->
         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-        <!-- 3. Buttons extension -->
         <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-        <!-- 4. CSV/Excel dependencies -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-        <!-- 5. Google Charts loader -->
         <script src="https://www.gstatic.com/charts/loader.js"></script>
 
-        <!-- 6. Custom initialization -->
         <script>
-            // DOM ready
             $(function(){
-            // Tab switching with smooth scroll
-            $('.tab').click(function(){
-                $('.tab').removeClass('active');
-                $(this).addClass('active');
-                $('.tab-content').removeClass('active');
-                const target = $($(this).data('target'));
-                target.addClass('active');
-                // Smooth scroll to top of page
-                $('html, body').animate({ scrollTop: 0 }, 600);
-            });
-
-            // Enhancer→Gene AJAX + geneTable DataTable
-            $('#enhancer-form').submit(function(e){
-                e.preventDefault();
-                $.post(this.action, $(this).serialize())
-                .done(html => {
-                    $('#enhancer-results').html(html);
-
-                    if ($.fn.DataTable.isDataTable('#geneTable')) {
-                        $('#geneTable').DataTable().destroy();
-                    }
-                    $('#geneTable').DataTable({
-                        dom: 'Bfrtip',
-                        buttons: [
-                            'csvHtml5',
-                            { extend:'csvHtml5', text:'TSV', fieldSeparator:'\t', extension:'.tsv', bom:true },
-                            'excelHtml5',
-                        ],
-                        pageLength: 15,
-                        lengthMenu: [10, 15, 25, 50, 100],
-                        order: [[0,'asc']],
-                        scrollY: '500px',
-                        scrollCollapse: true
-                    });
-
-                    // Smooth scroll to results
-                    $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
+                // Tab switching
+                $('.tab').click(function(){
+                    $('.tab').removeClass('active');
+                    $(this).addClass('active');
+                    $('.tab-content').removeClass('active');
+                    const target = $($(this).data('target'));
+                    target.addClass('active');
+                    $('html, body').animate({ scrollTop: 0 }, 600);
                 });
-            });
 
-            // Gene→Enhancer AJAX + enhancerTable DataTable (NO CHART)
-            $('#gene-form').submit(function(e){
-                e.preventDefault();
-                $.post(this.action, $(this).serialize())
-                .done(html => {
-                    $('#gene-results').html(html);
+                // Tab 1: Enhancer→Gene
+                $('#enhancer-form').submit(function(e){
+                    e.preventDefault();
+                    $.post(this.action, $(this).serialize())
+                    .done(html => {
+                        $('#enhancer-results').html(html);
 
-                    if ($.fn.DataTable.isDataTable('#enhancerTable')) {
-                        $('#enhancerTable').DataTable().clear().destroy();
-                    }
+                        if ($.fn.DataTable.isDataTable('#geneTable')) {
+                            $('#geneTable').DataTable().destroy();
+                        }
 
-                    setTimeout(() => {
-                        $('#enhancerTable').DataTable({
-                            dom: 'Bfrtip',
+                        $('#geneTable').DataTable({
+                            dom: 'Blfrtip',
                             buttons: [
-                                'csvHtml5',
-                                { extend: 'csvHtml5', text: 'TSV', fieldSeparator: '\t', extension: '.tsv', bom: true },
-                                'excelHtml5'
+                                {
+                                    extend: 'csvHtml5',
+                                    title: function() {
+                                        const chr = $('#enhancer_chr').val() || 'All';
+                                        const enh = $('#enhancer_name').val() || '';
+                                        const condition = $('#tab1_condition').val() || 'All';
+                                        const name = enh || `${chr}_Region`;
+                                        return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                    }
+                                },
+                                {
+                                    extend: 'csvHtml5',
+                                    text: 'TSV',
+                                    fieldSeparator: '\t',
+                                    extension: '.tsv',
+                                    title: function() {
+                                        const chr = $('#enhancer_chr').val() || 'All';
+                                        const enh = $('#enhancer_name').val() || '';
+                                        const condition = $('#tab1_condition').val() || 'All';
+                                        const name = enh || `${chr}_Region`;
+                                        return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                    }
+                                },
+                                {
+                                    extend: 'excelHtml5',
+                                    title: function() {
+                                        const chr = $('#enhancer_chr').val() || 'All';
+                                        const enh = $('#enhancer_name').val() || '';
+                                        const condition = $('#tab1_condition').val() || 'All';
+                                        const name = enh || `${chr}_Region`;
+                                        return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                    }
+                                }
                             ],
                             pageLength: 15,
                             lengthMenu: [10, 15, 25, 50, 100],
-                            order: [[4, 'desc']],
-                            scrollY: '500px',
-                            scrollCollapse: true
+                            order: [[0,'asc']],
+                            pagingType: 'full_numbers'
                         });
 
-                        // Smooth scroll to results
-                        $('html, body').animate({ scrollTop: $('#gene-results').offset().top - 100 }, 600);
-                    }, 300);
-                }).fail(() => alert('Search failed. Please try again.'));
-            });
+                        $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
+                    });
+                });
 
-            // Activity Class Search AJAX + DataTable
-            $('#activity-form').submit(function(e){
-                e.preventDefault();
-                $.post(this.action, $(this).serialize())
-                .done(html => {
-                    $('#activity-results').html(html);
+                // Tab 2: Gene→Enhancer
+                $('#gene-form').submit(function(e){
+                    e.preventDefault();
+                    $.post(this.action, $(this).serialize())
+                    .done(html => {
+                        $('#gene-results').html(html);
 
-                    if ($.fn.DataTable.isDataTable('#activityClassTable')) {
-                        $('#activityClassTable').DataTable().clear().destroy();
-                    }
+                        if ($.fn.DataTable.isDataTable('#enhancerTable')) {
+                            $('#enhancerTable').DataTable().clear().destroy();
+                        }
 
-                    setTimeout(() => {
-                        if ($('#activityClassTable').length) {
-                            $('#activityClassTable').DataTable({
-                                dom: 'Bfrtip',
+                        setTimeout(() => {
+                            $('#enhancerTable').DataTable({
+                                dom: 'Blfrtip',
                                 buttons: [
-                                    'csvHtml5',
-                                    { extend: 'csvHtml5', text: 'TSV', fieldSeparator: '\t', extension: '.tsv', bom: true },
-                                    'excelHtml5'
+                                    {
+                                        extend: 'csvHtml5',
+                                        title: function() {
+                                            const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
+                                            const condition = $('#tab2_condition').val() || 'All';
+                                            return `Gene_${gene}_Enhancers_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                        }
+                                    },
+                                    {
+                                        extend: 'csvHtml5',
+                                        text: 'TSV',
+                                        fieldSeparator: '\t',
+                                        extension: '.tsv',
+                                        title: function() {
+                                            const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
+                                            const condition = $('#tab2_condition').val() || 'All';
+                                            return `Gene_${gene}_Enhancers_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                        }
+                                    },
+                                    {
+                                        extend: 'excelHtml5',
+                                        title: function() {
+                                            const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
+                                            const condition = $('#tab2_condition').val() || 'All';
+                                            return `Gene_${gene}_Enhancers_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                        }
+                                    }
                                 ],
                                 pageLength: 15,
                                 lengthMenu: [10, 15, 25, 50, 100],
-                                order: [[0, 'asc']],
-                                scrollX: true,
-                                scrollY: '500px',
-                                scrollCollapse: true
+                                order: [[3, 'desc']],
+                                pagingType: 'full_numbers'
                             });
+
+                            $('html, body').animate({ scrollTop: $('#gene-results').offset().top - 100 }, 600);
+                        }, 300);
+                    }).fail(() => alert('Search failed. Please try again.'));
+                });
+
+                // Tab 3: Activity Class Search
+                $('#activity-form').submit(function(e){
+                    e.preventDefault();
+                    $.post(this.action, $(this).serialize())
+                    .done(html => {
+                        $('#activity-results').html(html);
+
+                        if ($.fn.DataTable.isDataTable('#activityClassTable')) {
+                            $('#activityClassTable').DataTable().clear().destroy();
                         }
 
-                        // Smooth scroll to results
-                        $('html, body').animate({ scrollTop: $('#activity-results').offset().top - 100 }, 600);
-                    }, 300);
-                }).fail(() => alert('Search failed. Please try again.'));
-            });
+                        setTimeout(() => {
+                            if ($('#activityClassTable').length) {
+                                $('#activityClassTable').DataTable({
+                                    dom: 'Blfrtip',
+                                    buttons: [
+                                        {
+                                            extend: 'csvHtml5',
+                                            title: function() {
+                                                const actClass = $('#tab3_activity_class').val() || 'All';
+                                                const access = $('#tab3_accessibility').val() || 'All';
+                                                return `ActivityClass_${actClass}_${access}_${new Date().toISOString().split('T')[0]}`;
+                                            }
+                                        },
+                                        {
+                                            extend: 'csvHtml5',
+                                            text: 'TSV',
+                                            fieldSeparator: '\t',
+                                            extension: '.tsv',
+                                            title: function() {
+                                                const actClass = $('#tab3_activity_class').val() || 'All';
+                                                const access = $('#tab3_accessibility').val() || 'All';
+                                                return `ActivityClass_${actClass}_${access}_${new Date().toISOString().split('T')[0]}`;
+                                            }
+                                        },
+                                        {
+                                            extend: 'excelHtml5',
+                                            title: function() {
+                                                const actClass = $('#tab3_activity_class').val() || 'All';
+                                                const access = $('#tab3_accessibility').val() || 'All';
+                                                return `ActivityClass_${actClass}_${access}_${new Date().toISOString().split('T')[0]}`;
+                                            }
+                                        }
+                                    ],
+                                    pageLength: 15,
+                                    lengthMenu: [10, 15, 25, 50, 100],
+                                    order: [[0, 'asc']],
+                                    pagingType: 'full_numbers',
+                                    scrollX: true
+                                });
+                            }
 
-            $('#enhancerToGeneBox').click(function() {
-                $('.tab[data-target="#region-search"]').click();
-            });
-            $('#geneToEnhancerBox').click(function() {
-                $('.tab[data-target="#gene-search"]').click();
-            });
+                            $('html, body').animate({ scrollTop: $('#activity-results').offset().top - 100 }, 600);
+                        }, 300);
+                    }).fail(() => alert('Search failed. Please try again.'));
+                });
 
-            $('#go-to-gene').click(function() {
-                $('.tab[data-target="#region-search"]').click();
+                // Info box clicks
+                $('#enhancerToGeneBox').click(function() {
+                    $('.tab[data-target="#region-search"]').click();
+                });
+                $('#geneToEnhancerBox').click(function() {
+                    $('.tab[data-target="#gene-search"]').click();
+                });
             });
-            $('#go-to-enhancer').click(function() {
-                $('.tab[data-target="#gene-search"]').click();
-            });
-        });
         </script>
     </body>
 </html>

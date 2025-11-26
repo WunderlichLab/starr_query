@@ -84,7 +84,7 @@ CREATE TEMPORARY TABLE TempAssociations (
   imd_vs_20e DOUBLE,
   20e_vs_ctrl DOUBLE,
   imd_vs_ctrl DOUBLE,
-  exp_condition ENUM('Control', '20E', 'HKSM'),
+  exp_condition ENUM('Control', '20E', 'IMD'),
   activity DOUBLE,
   accessibility VARCHAR(30)
 ) ENGINE=innodb;

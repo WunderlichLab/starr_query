@@ -22,40 +22,112 @@ def connect_db():
     )
     return connection
 
+
+## Get filter options:
+def get_filter_options():
+    """Fetch unique activity classes, conditions, time clusters, immune processes and broad immune roles from database"""
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+
+        # Get unique conditions
+        cursor.execute(
+            "SELECT DISTINCT exp_condition FROM Enhancers WHERE exp_condition IS NOT NULL ORDER BY exp_condition;")
+        conditions = [row[0] for row in cursor.fetchall()]
+
+        # Get unique activity classes
+        cursor.execute(
+            "SELECT DISTINCT activity_class FROM Activity_class_info WHERE activity_class IS NOT NULL ORDER BY activity_class;")
+        activity_classes = [row[0] for row in cursor.fetchall()]
+
+        # Get unique accessibility
+        cursor.execute(
+            "SELECT DISTINCT accessibility FROM Activity_class_info WHERE accessibility IS NOT NULL ORDER BY accessibility;")
+        accessibilities = [row[0] for row in cursor.fetchall()]
+
+        # Get unique time clusters
+        cursor.execute("SELECT DISTINCT time_cluster FROM Genes WHERE time_cluster IS NOT NULL ORDER BY time_cluster;")
+        time_clusters = [row[0] for row in cursor.fetchall()]
+
+        # Get unique immune processes
+        cursor.execute(
+            "SELECT DISTINCT immune_process FROM Genes WHERE immune_process IS NOT NULL ORDER BY immune_process;")
+        immune_processes = [row[0] for row in cursor.fetchall()]
+
+        # Get unique broad immune roles
+        cursor.execute(
+            "SELECT DISTINCT broad_immune_role FROM Activity_class_info WHERE broad_immune_role IS NOT NULL ORDER BY broad_immune_role;")
+        broad_immune_roles = [row[0] for row in cursor.fetchall()]
+
+        conn.close()
+        filters = {
+            'conditions': conditions,
+            'activity_classes': activity_classes,
+            'accessibilities': accessibilities,
+            'time_clusters': time_clusters,
+            'immune_processes': immune_processes,
+            'broad_immune_roles': broad_immune_roles
+        }
+
+        return filters
+
+    except mariadb.Error as e:
+        print(f"Error fetching filter options: {e}")
+        return {
+            'conditions': [],
+            'activity_classes': [],
+            'accessibilities': [],
+            'time_clusters': [],
+            'immune_processes': [],
+            'broad_immune_roles': []
+        }
+
 ## Tab 1
-def associations_by_region(chr, start, end, activity_score_min=0, exp_condition=None,
-                          time_cluster=None, immune_process=None):
+## Tab 1
+def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, activity_score_min=0, exp_condition=None,
+                           time_cluster=None, immune_process=None):
     try:
         conn = connect_db()
         cursor = conn.cursor()
 
         query = """
-            SELECT
-                e.name AS enhancer_id,
-                e.en_length AS en_length,
-                a.accessibility AS accessibility,
-                e.chromosome AS chromosome,
-                e.start AS estart,
-                e.end AS eend,
-                a.exp_condition AS exp_condition,
-                a.activity AS act_score,
-                g.symbol AS gene_symbol,
-                g.geneid AS gene_id,
-                g.tpm_ctrl AS tpm_ctrl,
-                g.tpm_imd AS tpm_imd,
-                g.tpm_20e AS tpm_20e,
-                g.immune_process AS immune_process,
-                g.time_cluster AS time_cluster
-            FROM Enhancers e
-            JOIN Associations a ON e.eid = a.eid
-            JOIN Genes g ON a.gid = g.gid
-            WHERE e.chromosome = %s
-              AND e.start >= %s
-              AND e.end <= %s
-              AND a.activity >= %s
-        """
+                SELECT e.name           AS enhancer_id, \
+                       e.en_length      AS en_length, \
+                       a.accessibility  AS accessibility, \
+                       e.chromosome     AS chromosome, \
+                       e.start          AS estart, \
+                       e.end            AS eend, \
+                       a.exp_condition  AS exp_condition, \
+                       a.activity       AS act_score, \
+                       g.symbol         AS gene_symbol, \
+                       g.geneid         AS gene_id, \
+                       g.tpm_ctrl       AS tpm_ctrl, \
+                       g.tpm_imd        AS tpm_imd, \
+                       g.tpm_20e        AS tpm_20e, \
+                       g.immune_process AS immune_process, \
+                       g.time_cluster   AS time_cluster
+                FROM Enhancers e
+                         JOIN Associations a ON e.eid = a.eid
+                         JOIN Genes g ON a.gid = g.gid
+                WHERE a.activity >= %s \
+                """
 
-        params = [chr, start, end, activity_score_min]
+        params = [activity_score_min]
+
+        # Check if coordinates are provided
+        if chr and start is not None and end is not None:
+            query += """ AND e.chromosome = %s
+              AND e.start >= %s
+              AND e.end <= %s"""
+            params.extend([chr, start, end])
+
+        # Check if enhancer name is provided
+        elif enhancer_name:
+            query += " AND e.name = %s"
+            params.append(enhancer_name)
+
+        else:
+            return []
 
         if exp_condition:
             query += " AND a.exp_condition = %s"
@@ -228,60 +300,8 @@ def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_con
 
 
 ## Tab 3
-def get_activity_class_options():
-    """Fetch unique activity classes, conditions, time clusters, immune processes and broad immune roles from database"""
-    try:
-        conn = connect_db()
-        cursor = conn.cursor()
-
-        # Get unique activity classes
-        cursor.execute(
-            "SELECT DISTINCT activity_class FROM Activity_class_info WHERE activity_class IS NOT NULL ORDER BY activity_class;")
-        activity_classes = [row[0] for row in cursor.fetchall()]
-
-        # Get unique accessibility
-        cursor.execute(
-            "SELECT DISTINCT accessibility FROM Activity_class_info WHERE accessibility IS NOT NULL ORDER BY accessibility;")
-        accessibilities = [row[0] for row in cursor.fetchall()]
-
-        # Get unique time clusters
-        cursor.execute("SELECT DISTINCT time_cluster FROM Genes WHERE time_cluster IS NOT NULL ORDER BY time_cluster;")
-        time_clusters = [row[0] for row in cursor.fetchall()]
-
-        # Get unique immune processes
-        cursor.execute(
-            "SELECT DISTINCT immune_process FROM Genes WHERE immune_process IS NOT NULL ORDER BY immune_process;")
-        immune_processes = [row[0] for row in cursor.fetchall()]
-
-        # Get unique broad immune roles
-        cursor.execute(
-            "SELECT DISTINCT broad_immune_role FROM Activity_class_info WHERE broad_immune_role IS NOT NULL ORDER BY broad_immune_role;")
-        broad_immune_roles = [row[0] for row in cursor.fetchall()]
-
-        conn.close()
-        filters = {
-            'activity_classes': activity_classes,
-            'accessibilities': accessibilities,
-            'time_clusters': time_clusters,
-            'immune_processes': immune_processes,
-            'broad_immune_roles': broad_immune_roles
-        }
-
-        return filters
-
-    except mariadb.Error as e:
-        print(f"Error fetching filter options: {e}")
-        return {
-            'activity_classes': [],
-            'accessibilities': [],
-            'time_clusters': [],
-            'immune_processes': [],
-            'broad_immune_roles': []
-        }
-
-
 def search_by_activity_class(activity_class=None,
-                             time_cluster=None, immune_role=None, accessibility=None):
+                             time_cluster=None, broad_immune_role=None, accessibility=None):
     """Search enhancers by activity class and additional filters"""
     try:
         conn = connect_db()
@@ -315,9 +335,9 @@ def search_by_activity_class(activity_class=None,
             query += " AND time_cluster = %s"
             params.append(time_cluster)
 
-        if immune_role:
+        if broad_immune_role:
             query += " AND broad_immune_role = %s"
-            params.append(immune_role)
+            params.append(broad_immune_role)
 
         query += " ORDER BY enhancer_name, gene_id"
 
@@ -339,7 +359,7 @@ def search_by_activity_class(activity_class=None,
         result_dicts = [dict(zip(columns, row)) for row in unique_rows]
 
         conn.close()
-        print(result_dicts)
+
         return result_dicts
 
     except mariadb.Error as e:
@@ -350,27 +370,43 @@ def search_by_activity_class(activity_class=None,
 ## Tab 0
 @app.route('/')
 def index():
-    filter_options = get_activity_class_options()
+    filter_options = get_filter_options()
     return render_template('template.html', filter_options=filter_options, request=request)
 
 ## Tab 1
 @app.route('/submit_region', methods=['POST'])
 def find_gene():
-    chr = request.form['chr']
-    start = int(request.form['start'])
-    end = int(request.form['end'])
+    # Get form data
+    chr = request.form.get('chr', '').strip() or None
+    start_str = request.form.get('start', '').strip()
+    end_str = request.form.get('end', '').strip()
+    enhancer_name = request.form.get('enhancer_name', '').strip() or None
     activity_score_min = float(request.form.get("activity_score_min", 0))
     exp_condition = request.form.get("condition", "").strip() or None
     time_cluster = request.form.get("time_cluster", "").strip() or None
     immune_process = request.form.get("immune_process", "").strip() or None
 
-    enhancers = associations_by_region(chr, start, end, activity_score_min,
+    # Convert start/end to integers if provided
+    start = int(start_str) if start_str else None
+    end = int(end_str) if end_str else None
+
+    # Validate input: either coordinates OR enhancer name
+    has_coordinates = chr and start is not None and end is not None
+    has_enhancer_name = enhancer_name is not None
+
+    if not (has_coordinates or has_enhancer_name):
+        filter_options = get_filter_options()
+        return render_template('tab_1.html',
+                             enhancers=[],
+                             filter_options=filter_options,
+                             error_message="Please provide either coordinates (chromosome, start, end) OR an enhancer name.")
+
+    enhancers = associations_by_region(chr, start, end, enhancer_name, activity_score_min,
                                        exp_condition, time_cluster, immune_process)
 
-    filter_options = get_activity_class_options()
+    filter_options = get_filter_options()
 
     return render_template('tab_1.html', enhancers=enhancers, filter_options=filter_options)
-
 
 ## Tab 2
 @app.route('/submit_gene', methods=['POST'])
@@ -384,7 +420,7 @@ def find_enhancer():
 
     has_gene   = bool(symbol or geneid)
 
-    filter_options = get_activity_class_options()
+    filter_options = get_filter_options()
 
     if not (has_gene):
         return render_template(
@@ -414,22 +450,22 @@ def activity_class_search():
     activity_class = request.form.get("activity_class", "").strip()
     accessibility = request.form.get("accessibility", "").strip()
     time_cluster = request.form.get("time_cluster", "").strip()
-    immune_role = request.form.get("immune_role", "").strip()
+    broad_immune_role = request.form.get("broad_immune_role", "").strip()
 
-    filter_options = get_activity_class_options()
+    filter_options = get_filter_options()
 
     enhancers = []
     error_message = ""
 
     # At least one filter should be applied
-    if not any([activity_class, accessibility, time_cluster, immune_role]):
+    if not any([activity_class, accessibility, time_cluster, broad_immune_role]):
         error_message = "Please select at least one filter to search"
     else:
         enhancers = search_by_activity_class(
             activity_class=activity_class if activity_class else None,
             accessibility=accessibility if accessibility else None,
             time_cluster=time_cluster if time_cluster else None,
-            immune_role=immune_role if immune_role else None
+            broad_immune_role=broad_immune_role if broad_immune_role else None
         )
 
         if not enhancers:

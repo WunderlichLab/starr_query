@@ -1,4 +1,19 @@
+{% if error_message %}
+    <div style="color: #d32f2f; background-color: #ffebee; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+        {{ error_message }}
+    </div>
+{% endif %}
+
 {% if enhancers %}
+        <div id="activity_histogram" style="width: 100%; height: 400px; margin: 2rem 0;"></div>
+
+    <!-- Store data -->
+    <script id="histogram-data" type="application/json">
+    {
+        "scores":{{ enhancers | map(attribute='act_score') | list | tojson }}
+    }
+    </script>
+
     {% for e in enhancers %}
         {% if loop.first %}
         <!-- Gene Info (shown once) -->
@@ -55,9 +70,9 @@
             <tr>
                 <td>
                     {% if e.chromosome and e.start and e.end %}
-                        <a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&position={{ e.chromosome }}:{{ e.start }}-{{ e.end }}" target="_blank">
-                            {{ e.enhancer_id }}
-                        </a>
+                        <a href="https://genome.ucsc.edu/s/lbcohen/immune_enhancers?position={{ e.chromosome }}:{{ e.window_start }}-{{ e.window_end }}" target="_blank">
+                        {{ e.enhancer_id }}
+                    </a>
                     {% else %}
                         {{ e.enhancer_id or 'N/A' }}
                     {% endif %}
@@ -65,7 +80,7 @@
                 <td>{{ e.en_length }}</td>
                 <td>{{ e.accessibility or '-' }}</td>
                 <td>{{ e.act_score or ('-' if e.act_score == 0) }}</td>
-                <td>{{ e.exp_condition }}</td>
+                <td>{{ e.exp_condition or '-' }}</td>
             </tr>
 
         {% if loop.last %}
@@ -74,8 +89,7 @@
         {% endif %}
     {% endfor %}
 
-{% elif error_message %}
-    <p>{{ error_message }}</p>
-{% else %}
+{% elif not error_message %}
     <p>No enhancers found matching your criteria.</p>
+
 {% endif %}
