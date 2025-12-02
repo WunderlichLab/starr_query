@@ -17,7 +17,7 @@
         <!-- Division for header and logo -->
        	<div>
             <div class="header">
-                <h1 id="title">Large-scale Enhancer Screen Database</h1>
+                <h1 id="title">Drosophila Immune Enhancer Atlas</h1>
                 <a href="https://wunderlichlab.mystrikingly.com/"><img src="{{ url_for('static', filename='images/wunderlich_lab_clear.png') }}" class="logo" alt="Logo"></a>
             </div>
         </div>
@@ -34,7 +34,7 @@
         <div id="introduction" class="tab-content active">
             <h2>Drosophila Immune Enhancer Atlas</h2>
 
-            <div style="background-color: #f0f8ff; padding: 1.5rem; border-left: 4px solid #5f9ea0; margin-bottom: 2rem;">
+            <div>
                 <h3 style="margin-top: 0;">About This Resource</h3>
                 <p><strong>Citation:</strong> Cohen, L.B., Hadzic, T., Sauer, C., Gibbs, J.R., & Wunderlich, Z. (2025).
                 <em>A genome-wide survey reveals a diverse array of enhancers coordinate the Drosophila innate immune response</em>.
@@ -66,9 +66,9 @@
             </div>
 
             <p id="description">
-                This is the Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq
-                datasets from <i>Drosophila melanogaster</i>. The database helps researchers explore how enhancers regulate gene
-                expression across different experimental conditions (Control, 20E hormone treatment, and HKSM immune treatment).
+                This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq datasets
+                from <i>Drosophila melanogaster</i>. The database helps researchers explore how enhancers regulate gene expression across different
+                experimental conditions (Control, 20E hormone treatment, and IMD immune treatment).
             </p>
 
             <h3>What This Website Does</h3>
@@ -77,56 +77,54 @@
                 gene expression and functional annotations. It allows you to:
             </p>
             <ul>
-                <li><strong>Search by enhancer location:</strong> Find all genes regulated by
-                    enhancers in a specific chromosomal region</li>
-                <li><strong>Search by gene:</strong> Discover all enhancers that regulate a
-                    particular gene across experimental conditions</li>
-                <li><strong>Search by activity profile:</strong> Filter enhancers based on
-                    activity class, accessibility, immune function, and temporal gene expression patterns</li>
-                <li><strong>Apply comprehensive filters:</strong> Refine results by activity scores,
-                    experimental conditions, time clusters, and immune process annotations</li>
-                <li><strong>Export results:</strong> Download results in CSV, TSV, or Excel formats for
-                    further analysis</li>
+                <li><strong>Search by Region/Coordinates/Position:</strong>
+                    Find all enhancers with in a specific chromosomal region and their assigned genes</li>
+                <li><strong>Search by gene:</strong>
+                    Discover all enhancers that regulate a particular gene across experimental conditions</li>
+                <li><strong>Search by activity class enhancers: </strong>
+                    Find all enhancers based on activity class coordinates with accessibility, immune function, and temporal gene expression information</li>
+                <li><strong>Apply comprehensive filters:</strong>
+                    Refine results by activity scores, experimental conditions, time clusters, and immune process annotations</li>
+                <li><strong>Export results:</strong>
+                    Download results in CSV, TSV, or Excel formats for further analysis</li>
             </ul>
 
             <h3>How to Use This Database</h3>
 
             <div class="info-boxes">
-                <div class="info-box" id="enhancerToGeneBox">
-                    <h4>Enhancer → Gene</h4>
+                <div class="info-box" id="regionBox">
+                    <h4>Search by Proximity</h4>
                     <p>
-                        <strong>Use case:</strong> You have enhancer coordinates and want to find regulated genes<br><br>
+                        <strong>Use case:</strong> You have a genomic region and want to find enhancers and their assigned genes<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
                         <li>Go to the <strong>"Search by Proximity"</strong> tab</li>
-                        <li>Enter the chromosome (2L, 2R, 3L, 3R, X, Y, or 4)</li>
-                        <li>Enter the enhancer start and end positions</li>
+                        <li>Enter the chromosome (2L, 2R, 3L, 3R, X, Y, or 4), enhancer start and end positions</li>
+                        <li>Alternatively, you can also enter the enhancer name (eg. 2L:100000-120000)</li>
                         <li>Optionally filter by activity score, condition, time cluster, or immune process</li>
                         <li>Click "Submit" to see all genes within 15kb of your enhancer region</li>
                         <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
                     </ol>
-                    <p><strong>Output:</strong> A sortable table with gene symbols, enhancer IDs, TPM values, immune annotations, and direct links to UCSC Genome Browser.</p>
                 </div>
 
-                <div class="info-box" id="geneToEnhancerBox">
-                    <h4>Gene → Enhancer</h4>
+                <div class="info-box" id="geneBox">
+                    <h4>Search by Genes</h4>
                     <p>
-                        <strong>Use case:</strong> You have a gene of interest and want to find its regulatory enhancers<br><br>
+                        <strong>Use case:</strong> You have a gene of interest and want to find its assigned enhancers<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
                         <li>Go to the <strong>"Search by Genes"</strong> tab</li>
                         <li>Enter either a gene symbol (e.g., "Abd-B") or FlyBase ID (e.g., "FBgn0000015")</li>
-                        <li>Set an activity score threshold (default: 500)</li>
+                        <li>Set an activity score threshold (default: 0)</li>
                         <li>Optionally filter by condition, time cluster, or immune process</li>
                         <li>Click "Submit" to find all enhancers regulating your gene</li>
-                        <li>Download the results table</li>
+                        <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
                     </ol>
-                    <p><strong>Output:</strong> A table of enhancers with activity scores, accessibility information, distance to gene, and genomic coordinates with browser links.</p>
                 </div>
 
-                <div class="info-box">
+                <div class="info-box" id="activityBox">
                     <h4>Activity Class Search</h4>
                     <p>
                         <strong>Use case:</strong> You want to find enhancers with specific regulatory properties<br><br>
@@ -134,29 +132,29 @@
                     </p>
                     <ol>
                         <li>Go to the <strong>"Search by Activity Info"</strong> tab</li>
-                        <li>Select desired filters: activity class, accessibility, time cluster, or immune process</li>
+                        <li>Select desired filters: activity class, accessibility, time cluster, or broad immune role</li>
                         <li>At least one filter is required</li>
-                        <li>Click "Search" to find matching enhancers and their target genes</li>
+                        <li>Click "Submit" to find matching enhancers and their target genes</li>
+                        <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
                     </ol>
-                    <p><strong>Output:</strong> A comprehensive table showing enhancers grouped by activity class, with associated genes and functional annotations.</p>
                 </div>
             </div>
 
             <h3>About the Data</h3>
-            <p>The database contains datasets from three experimental conditions:</p>
+            <p>The database contains STARR-seq data from S2* cells treated with three different conditions:</p>
             <ul>
                 <li><strong>Control:</strong> Baseline conditions</li>
                 <li><strong>20E:</strong> hormone treatment</li>
-                <li><strong>HKSM:</strong> Heat-killed <i>S. marcescens</i> with 20E treatment</li>
+                <li><strong>IMD:</strong> 20E and Heat-killed <i>Serratia marcescens</i></li>
             </ul>
 
             <p>Each entry includes:</p>
             <ul>
-                <li>Genomic coordinates of consensus enhancer regions</li>
+                <li>Genomic coordinates of enhancer regions</li>
                 <li>Genes found within 5kb upstream and 15 kb downstream of each enhancer</li>
                 <li>Gene expression levels (TPM values) across conditions</li>
                 <li>Enhancer activity scores from STARR-seq assays</li>
-                <li>Accessibility information (ATAC-seq derived)</li>
+                <li>Accessibility information (based on ATAC-seq in immune induced hemocytes extracted from adult flies)</li>
                 <li>Gene annotations: immune pathway, time cluster classification, and distance to enhancer</li>
                 <li>Transcription factor motifs and binding site counts</li>
             </ul>
@@ -181,18 +179,25 @@
             </ul>
 
             <h3>Questions or Issues?</h3>
-            <p>For questions about this database or the underlying data, please contact the Wunderlich Lab.</p>
+            <p>For questions about this database or the underlying data, please contact the Wunderlich Lab.<br>
+            Dr. Zeba Wunderlich: zeba@bu.edu
+            </p>
 
             <h3>Acknowledgements</h3>
-            <p>This database was created for and with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianne Cohen for their support and guidance.</p>
-            <p>This website was created by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course BF768 Biological Database Analysis at Boston University, facilitated by Dr. Gary Benson.</p>
+            <p>This database was created for, and with data provided by, the Wunderlich Lab. We thank Dr. Zeba Wunderlich and
+            Dr. Lianne Cohen for their support and guidance.</p>
+
+            <p>This website was originally developed by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course
+            <strong>BF768 Biological Database Analysis</strong> at Boston University, facilitated by Dr. Gary Benson.
+            Following the course, Anushka Dongaonkar continued to expand and maintain the project.</p>
+
         </div>
 
 
         <!-- Tab1 -->
         <div id="region-search" class="tab-content">
             <h4>Search by chromosomal region OR enhancer name</h4>
-            <p style="font-size: 0.9em; color: #666;">Example coordinates: 2L, start: 10426653, end: 10427192 | Example enhancer: 2L:484243-485063</p>
+            <p style="font-size: 0.9em; color: #666;">Example coordinates: 2L, start: 10426653, end: 10427192 | Example enhancer: 2R:16125955-16138021</p>
 
             <form id="enhancer-form" action="{{ url_for('find_gene') }}" method="POST">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
@@ -227,9 +232,9 @@
 
                 <div style="margin-bottom: 1rem;">
                     <label>
-                        Enhancer Name:<br>
+                        Region Name:<br>
                         <input type="text" name="enhancer_name" id="enhancer_name"
-                               placeholder="e.g., 2L:484243-485063"
+                               placeholder="e.g., 2R:16125955-16138021"
                                style="width: 100%; max-width: 400px;">
                     </label>
                 </div>
@@ -388,6 +393,21 @@
             <div id="activity-results" style="margin-top: 2rem;"></div>
         </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <!-- JS Libraries -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -411,7 +431,7 @@
                     $('html, body').animate({ scrollTop: 0 }, 600);
                 });
 
-                // Tab 1: Enhancer→Gene
+                // Tab 1
                 $('#enhancer-form').submit(function(e){
                     e.preventDefault();
                     $.post(this.action, $(this).serialize())
@@ -422,52 +442,63 @@
                             $('#geneTable').DataTable().destroy();
                         }
 
-                        $('#geneTable').DataTable({
-                            dom: 'Blfrtip',
-                            buttons: [
-                                {
-                                    extend: 'csvHtml5',
-                                    title: function() {
-                                        const chr = $('#enhancer_chr').val() || 'All';
-                                        const enh = $('#enhancer_name').val() || '';
-                                        const condition = $('#tab1_condition').val() || 'All';
-                                        const name = enh || `${chr}_Region`;
-                                        return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                    }
-                                },
-                                {
-                                    extend: 'csvHtml5',
-                                    text: 'TSV',
-                                    fieldSeparator: '\t',
-                                    extension: '.tsv',
-                                    title: function() {
-                                        const chr = $('#enhancer_chr').val() || 'All';
-                                        const enh = $('#enhancer_name').val() || '';
-                                        const condition = $('#tab1_condition').val() || 'All';
-                                        const name = enh || `${chr}_Region`;
-                                        return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                    }
-                                },
-                                {
-                                    extend: 'excelHtml5',
-                                    title: function() {
-                                        const chr = $('#enhancer_chr').val() || 'All';
-                                        const enh = $('#enhancer_name').val() || '';
-                                        const condition = $('#tab1_condition').val() || 'All';
-                                        const name = enh || `${chr}_Region`;
-                                        return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                    }
-                                }
-                            ],
-                            pageLength: 15,
-                            lengthMenu: [10, 15, 25, 50, 100],
-                            order: [[0,'asc']],
-                            pagingType: 'full_numbers'
-                        });
+                        // Add a small delay to ensure DOM is ready
+                        setTimeout(() => {
+                            $('#geneTable').DataTable({
 
-                        $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
+                                dom: 'Blfrtip',
+                                buttons: [
+                                    {
+                                        extend: 'csvHtml5',
+                                        title: function() {
+                                            const chr = $('#enhancer_chr').val() || 'All';
+                                            const enh = $('#enhancer_name').val() || '';
+                                            const condition = $('#tab1_condition').val() || 'All';
+                                            const name = enh || `${chr}_Region`;
+                                            return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                        }
+                                    },
+                                    {
+                                        extend: 'csvHtml5',
+                                        text: 'TSV',
+                                        fieldSeparator: '\t',
+                                        extension: '.tsv',
+                                        title: function() {
+                                            const chr = $('#enhancer_chr').val() || 'All';
+                                            const enh = $('#enhancer_name').val() || '';
+                                            const condition = $('#tab1_condition').val() || 'All';
+                                            const name = enh || `${chr}_Region`;
+                                            return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                        }
+                                    },
+                                    {
+                                        extend: 'excelHtml5',
+                                        title: function() {
+                                            const chr = $('#enhancer_chr').val() || 'All';
+                                            const enh = $('#enhancer_name').val() || '';
+                                            const condition = $('#tab1_condition').val() || 'All';
+                                            const name = enh || `${chr}_Region`;
+                                            return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
+                                        }
+                                    }
+                                ],
+                                pageLength: 15,
+                                lengthMenu: [10, 15, 25, 50, 100],
+                                order: [[0,'asc']],
+                                pagingType: 'full_numbers',
+                                orderCellsTop: true,
+                                columnDefs: [
+                                    { orderable: false, targets: [] }
+                                ]
+                            });
+
+                            initializeCharts();
+
+                            $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
+                        }, 100);
                     });
                 });
+
 
                 // Tab 2: Gene→Enhancer
                 $('#gene-form').submit(function(e){
@@ -517,6 +548,7 @@
                                 order: [[3, 'desc']],
                                 pagingType: 'full_numbers'
                             });
+                            initializeCharts();
 
                             $('html, body').animate({ scrollTop: $('#gene-results').offset().top - 100 }, 600);
                         }, 300);
@@ -573,6 +605,7 @@
                                     pagingType: 'full_numbers',
                                     scrollX: true
                                 });
+                                initializeCharts();
                             }
 
                             $('html, body').animate({ scrollTop: $('#activity-results').offset().top - 100 }, 600);
@@ -581,13 +614,140 @@
                 });
 
                 // Info box clicks
-                $('#enhancerToGeneBox').click(function() {
+                $('#regionBox').click(function() {
                     $('.tab[data-target="#region-search"]').click();
                 });
-                $('#geneToEnhancerBox').click(function() {
+
+                $('#geneBox').click(function() {
                     $('.tab[data-target="#gene-search"]').click();
                 });
+
+                $('#activityBox').click(function() {
+                    $('.tab[data-target="#activity-search"]').click();
+                });
             });
+
+            // Load Google Charts
+            google.charts.load('current', {'packages':['corechart']});
+
+            // Tab 1: Condition Pie Chart
+            function drawConditionPieChart() {
+                const chartDataEl = document.getElementById('chart-data');
+                if (!chartDataEl) return;
+
+                const chartData = JSON.parse(chartDataEl.textContent);
+                if (!chartData || !chartData.conditions) return;
+
+                const conditionCounts = {};
+                chartData.conditions.forEach(conditionList => {
+                    conditionList.forEach(cond => {
+                        const condition = cond.exp_condition;
+                        conditionCounts[condition] = (conditionCounts[condition] || 0) + 1;
+                    });
+                });
+
+                const data = google.visualization.arrayToDataTable([
+                    ['Condition', 'Count'],
+                    ...Object.entries(conditionCounts)
+                ]);
+
+                const options = {
+                    title: 'Enhancers by Experimental Condition',
+                    pieHole: 0.4,
+                    colors: ['#5f9ea0', '#4a7c7e', '#6fa8aa'],
+                    backgroundColor: { fill: '#f8fafb' }
+                };
+
+                const chart = new google.visualization.PieChart(document.getElementById('condition_pie_chart'));
+                chart.draw(data, options);
+            }
+
+            // Tab 2: Activity Score Histogram
+            function drawActivityHistogram() {
+                const histDataEl = document.getElementById('histogram-data');
+                if (!histDataEl) return;
+
+                const histData = JSON.parse(histDataEl.textContent);
+                if (!histData || !histData.scores) return;
+
+                const dataArray = [['Score', 'Frequency']];
+                histData.scores.forEach(score => {
+                    if (score) dataArray.push([parseFloat(score), 1]);
+                });
+
+                const data = google.visualization.arrayToDataTable(dataArray);
+
+                const options = {
+                    title: 'Distribution of Enhancer Activity Scores',
+                    legend: { position: 'none' },
+                    histogram: { bucketSize: 50 },
+                    hAxis: { title: 'Activity Score' },
+                    vAxis: { title: 'Frequency' },
+                    colors: ['#5f9ea0'],
+                    backgroundColor: { fill: '#f8fafb' }
+                };
+
+                const chart = new google.visualization.Histogram(document.getElementById('activity_histogram'));
+                chart.draw(data, options);
+            }
+
+            // Tab 3: Flexible Chart
+            function updateTab3Chart() {
+                const tab3DataEl = document.getElementById('tab3-data');
+                if (!tab3DataEl) return;
+
+                const tableData = JSON.parse(tab3DataEl.textContent);
+                const chartType = document.getElementById('chart_type').value;
+                const xAxis = document.getElementById('x_axis').value;
+
+                const counts = {};
+                tableData.forEach(row => {
+                    const key = row[xAxis] || 'Unknown';
+                    counts[key] = (counts[key] || 0) + 1;
+                });
+
+                const data = google.visualization.arrayToDataTable([
+                    [xAxis.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 'Count'],
+                    ...Object.entries(counts)
+                ]);
+
+                let chart, options;
+                if (chartType === 'bar') {
+                    options = {
+                        title: `Distribution by ${xAxis.replace(/_/g, ' ')}`,
+                        legend: { position: 'none' },
+                        hAxis: { title: xAxis.replace(/_/g, ' ') },
+                        vAxis: { title: 'Count' },
+                        colors: ['#5f9ea0'],
+                        backgroundColor: { fill: '#f8fafb' }
+                    };
+                    chart = new google.visualization.ColumnChart(document.getElementById('tab3_chart'));
+                } else {
+                    options = {
+                        title: `Distribution by ${xAxis.replace(/_/g, ' ')}`,
+                        pieHole: 0.4,
+                        backgroundColor: { fill: '#f8fafb' }
+                    };
+                    chart = new google.visualization.PieChart(document.getElementById('tab3_chart'));
+                }
+
+                chart.draw(data, options);
+            }
+
+            // Draw charts after DataTables init
+            function initializeCharts() {
+                setTimeout(() => {
+                    if (document.getElementById('condition_pie_chart')) {
+                        google.charts.setOnLoadCallback(drawConditionPieChart);
+                    }
+                    if (document.getElementById('activity_histogram')) {
+                        google.charts.setOnLoadCallback(drawActivityHistogram);
+                    }
+                    if (document.getElementById('tab3_chart')) {
+                        google.charts.setOnLoadCallback(updateTab3Chart);
+                    }
+                }, 500);
+            }
         </script>
     </body>
 </html>

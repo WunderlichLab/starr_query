@@ -5,21 +5,52 @@
 {% endif %}
 
 {% if enhancers %}
-        <div style="margin-top: 2em;">
-        <!-- Visualization Controls -->
+    <div style="margin-bottom: 1em;">
+        <strong>Total Results Found: {{ enhancers|length }}</strong>
+    </div>
+
+    <!-- Enhancer Table -->
+    <table id="activityClassTable" class="display" style="width:100%;">
+        <thead>
+        <tr>
+            <th>Enhancer Name</th>
+            <th>Activity Class</th>
+            <th>Accessibility</th>
+            <th>Gene ID</th>
+            <th>Distance to Enhancer</th>
+            <th>Time Cluster</th>
+            <th>Broad Immune Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for e in enhancers %}
+            <tr>
+                <td>{{ e.enhancer_name or '-' }}</td>
+                <td>{{ e.activity_class or '-' }}</td>
+                <td>{{ e.accessibility or '-'}}</td>
+                <td>{{ e.gene_id or '-' }}</td>
+                <td>{{ e.dist_to_enh if e.dist_to_enh is not none else '-' }}</td>
+                <td>{{ e.time_cluster or '-' }}</td>
+                <td>{{ e.broad_immune_role or '-' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Visualization Controls at the bottom -->
+    <div class="chart-container" style="margin-top: 2rem;">
+        <h4>Data Visualization</h4>
         <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-            <h4>Visualization Options</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                 <label>
                     Chart Type:
                     <select id="chart_type">
                         <option value="bar">Bar Chart</option>
-                        <option value="scatter">Scatter Plot</option>
                         <option value="pie">Pie Chart</option>
                     </select>
                 </label>
                 <label>
-                    X-Axis:
+                    Group By:
                     <select id="x_axis">
                         <option value="activity_class">Activity Class</option>
                         <option value="accessibility">Accessibility</option>
@@ -27,62 +58,19 @@
                         <option value="broad_immune_role">Broad Immune Role</option>
                     </select>
                 </label>
-                <label>
-                    Y-Axis (for scatter):
-                    <select id="y_axis">
-                        <option value="dist_to_enh">Distance to Enhancer</option>
-                        <option value="count">Count</option>
-                    </select>
-                </label>
-                <button onclick="updateChart()" style="align-self: end;">Update Chart</button>
+                <button onclick="updateTab3Chart()" style="align-self: end; padding: 0.6rem 1.5rem; background-color: #2c5aa0; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    Update Chart
+                </button>
             </div>
         </div>
-
-        <!-- Chart Container -->
-        <div id="tab3_chart" style="width: 100%; height: 500px; margin-bottom: 2rem;"></div>
-
-        <!-- Results Summary -->
-        <div style="margin-bottom: 1em;">
-            <strong>Total Results Found: {{ enhancers|length }}</strong>
-        </div>
-    <div style="margin-top: 2em;">
-        <!-- Results Summary -->
-        <div>
-            <strong>Total Enhancers Found: {{ enhancers|length }}</strong>
-        </div>
-
-        <!-- Enhancer Table -->
-        <table id="activityClassTable" class="display" style="width:100%;">
-            <thead>
-                <tr>
-                    <th rowspan="2">Enhancer</th>
-                    <th rowspan="2">Activity Class</th>
-                    <th rowspan="2">Accessibility</th>
-                    <th rowspan="2">Gene Symbol</th>
-                    <th rowspan="2">Distance to Enhancer</th>
-                    <th rowspan="2">Time Cluster</th>
-                    <th rowspan="2">Broad Immune Role</th>
-                </tr>
-            </thead>
-            {% for e in enhancers %}
-            <tbody>
-            <tr>
-                <td>{{ e.enhancer_name }}</td>
-                <td>{{ e.activity_class or '-' }}</td>
-                <td>{{ e.accessibility or '-'}}</td>
-                <td>{{ e.gene_symbol or e.gene_id or '-' }}</td>
-                <td>{{ e.dist_to_enh or '-' }}</td>
-                <td>{{ e.time_cluster or '-' }}</td>
-                <td>{{ e.broad_immune_role or '-' }}</td>
-            </tr>
-            </tbody>
-            {% endfor %}
-        </table>
+        <div id="tab3_chart" style="width: 100%; height: 500px;"></div>
     </div>
-        </div>
 
+    <!-- Store data for charts -->
+    <script id="tab3-data" type="application/json">
+    {{ enhancers | tojson }}
+    </script>
 
 {% elif not error_message %}
     <p>No enhancers found matching your criteria.</p>
-
 {% endif %}

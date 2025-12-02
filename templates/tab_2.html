@@ -5,91 +5,84 @@
 {% endif %}
 
 {% if enhancers %}
-        <div id="activity_histogram" style="width: 100%; height: 400px; margin: 2rem 0;"></div>
+    {% set first_gene = enhancers[0] %}
 
-    <!-- Store data -->
-    <script id="histogram-data" type="application/json">
-    {
-        "scores":{{ enhancers | map(attribute='act_score') | list | tojson }}
-    }
-    </script>
+    <!-- Gene Info (shown once) -->
+    <table id="geneInfo" style="margin-bottom: 2rem;">
+        <tbody>
+        <tr>
+            <td rowspan="3"><strong>Gene Information</strong></td>
+            <td><strong>Gene Symbol</strong></td>
+            <td>{{ first_gene.gene_symbol }}</td>
+        </tr>
+        <tr>
+            <td><strong>Gene ID</strong></td>
+            <td>{{ first_gene.gene_id }}</td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td rowspan="4"><strong>TPM Values</strong></td>
+            <td><strong>Control</strong></td>
+            <td>{{ first_gene.tpm_ctrl if first_gene.tpm_ctrl else '-' }}</td>
+        </tr>
+        <tr>
+            <td><strong>IMD</strong></td>
+            <td>{{ first_gene.tpm_imd if first_gene.tpm_imd else '-' }}</td>
+        </tr>
+        <tr>
+            <td><strong>20E</strong></td>
+            <td>{{ first_gene.tpm_20e if first_gene.tpm_20e else '-' }}</td>
+        </tr>
+        </tbody>
+    </table>
 
-    {% for e in enhancers %}
-        {% if loop.first %}
-        <!-- Gene Info (shown once) -->
-        <table id="geneInfo">
-          <tbody>
-          <tr>
-              <td rowspan="3"><strong>Gene Information</strong></td>
-              <td></td>
-              <td></td>
-          </tr>
-            <tr>
-              <td><strong>Gene Symbol</strong></td>
-              <td>{{ e.gene_symbol }}</td>
-            </tr>
-            <tr>
-              <td><strong>Gene ID</strong></td>
-              <td>{{ e.gene_id }}</td>
-            </tr>
-          <tr>
-              <td rowspan="4"><strong>TPM Values</strong></td>
-              <td></td>
-              <td></td>
-          </tr>
-            <tr>
-              <td><strong>Control</strong></td>
-              <td>{{ e.tpm_ctrl }}</td>
-            </tr>
-            <tr>
-              <td><strong>IMD</strong></td>
-              <td>{{ e.tpm_imd }}</td>
-            </tr>
-            <tr>
-              <td><strong>20E</strong></td>
-              <td>{{ e.tpm_20e }}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Enhancer Table -->
-        <table id="enhancerTable" class="display" style="width:100%; margin-top:1em;">
-          <thead>
-            <tr>
-                <th>Enhancer Name</th>
-                <th>Enhancer Length</th>
-                <th>Accessibility</th>
-                <th>Activity Score</th>
-                <th>Condition</th>
-            </tr>
-          </thead>
-          <tbody>
-        {% endif %}
-
-            <!-- Enhancer Row -->
+    <!-- Enhancer Table -->
+    <table id="enhancerTable" class="display" style="width:100%;">
+        <thead>
+        <tr>
+            <th>Enhancer Name</th>
+            <th>Enhancer Length</th>
+            <th>Accessibility</th>
+            <th>Activity Score</th>
+            <th>Condition</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for e in enhancers %}
             <tr>
                 <td>
                     {% if e.chromosome and e.start and e.end %}
-                        <a href="https://genome.ucsc.edu/s/lbcohen/immune_enhancers?position={{ e.chromosome }}:{{ e.window_start }}-{{ e.window_end }}" target="_blank">
-                        {{ e.enhancer_id }}
-                    </a>
+                        <a href="https://genome.ucsc.edu/s/lbcohen/immune_enhancers?position={{ e.chromosome }}:{{ e.start }}-{{ e.end }}" target="_blank">
+                            {{ e.enhancer_id }}
+                        </a>
                     {% else %}
                         {{ e.enhancer_id or 'N/A' }}
                     {% endif %}
                 </td>
                 <td>{{ e.en_length }}</td>
                 <td>{{ e.accessibility or '-' }}</td>
-                <td>{{ e.act_score or ('-' if e.act_score == 0) }}</td>
+                <td>{{ e.act_score if e.act_score else '-' }}</td>
                 <td>{{ e.exp_condition or '-' }}</td>
             </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
-        {% if loop.last %}
-          </tbody>
-        </table>
-        {% endif %}
-    {% endfor %}
+    <!-- Chart at the bottom -->
+    <div class="chart-container">
+        <h4>Activity Score Distribution</h4>
+        <div id="activity_histogram" style="width: 100%; height: 400px;"></div>
+    </div>
+
+    <!-- Store data -->
+    <script id="histogram-data" type="application/json">
+    {
+        "scores": {{ enhancers | map(attribute='act_score') | list | tojson }}
+    }
+    </script>
 
 {% elif not error_message %}
     <p>No enhancers found matching your criteria.</p>
-
 {% endif %}
