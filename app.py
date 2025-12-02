@@ -83,7 +83,6 @@ def get_filter_options():
         }
 
 ## Tab 1
-## Tab 1
 def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, activity_score_min=0, exp_condition=None,
                            time_cluster=None, immune_process=None):
     try:
@@ -91,25 +90,25 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
         cursor = conn.cursor()
 
         query = """
-                SELECT e.name           AS enhancer_id, \
-                       e.en_length      AS en_length, \
-                       a.accessibility  AS accessibility, \
-                       e.chromosome     AS chromosome, \
-                       e.start          AS estart, \
-                       e.end            AS eend, \
-                       a.exp_condition  AS exp_condition, \
-                       a.activity       AS act_score, \
-                       g.symbol         AS gene_symbol, \
-                       g.geneid         AS gene_id, \
-                       g.tpm_ctrl       AS tpm_ctrl, \
-                       g.tpm_imd        AS tpm_imd, \
-                       g.tpm_20e        AS tpm_20e, \
-                       g.immune_process AS immune_process, \
+                SELECT e.name           AS enhancer_id,
+                       e.en_length      AS en_length,
+                       a.accessibility  AS accessibility,
+                       e.chromosome     AS chromosome,
+                       e.start          AS estart,
+                       e.end            AS eend,
+                       a.exp_condition  AS exp_condition,
+                       a.activity       AS act_score,
+                       g.symbol         AS gene_symbol,
+                       g.geneid         AS gene_id,
+                       g.tpm_ctrl       AS tpm_ctrl,
+                       g.tpm_imd        AS tpm_imd,
+                       g.tpm_20e        AS tpm_20e,
+                       g.immune_process AS immune_process,
                        g.time_cluster   AS time_cluster
                 FROM Enhancers e
                          JOIN Associations a ON e.eid = a.eid
                          JOIN Genes g ON a.gid = g.gid
-                WHERE a.activity >= %s \
+                WHERE a.activity >= %s
                 """
 
         params = [activity_score_min]
@@ -123,8 +122,12 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
 
         # Check if enhancer name is provided
         elif enhancer_name:
-            query += " AND e.name = %s"
-            params.append(enhancer_name)
+            [chr,region] = enhancer_name.split(':')
+            [start, end] = region.split('-')
+            query += """ AND e.chromosome = %s
+                          AND e.start >= %s
+                          AND e.end <= %s"""
+            params.extend([chr, start, end])
 
         else:
             return []
