@@ -7,11 +7,16 @@
 {% if enhancers %}
     {% set first_gene = enhancers[0] %}
 
-    <!-- Gene Info (shown once) -->
+    <!-- Results Summary -->
+    <div style="margin-bottom: 1.5rem; padding: 0.75rem; background: #f8fafb; border-left: 4px solid #2c5aa0; border-radius: 4px;">
+        <strong style="color: #2c5aa0;">Total Results Found: {{ enhancers|length }}</strong>
+    </div>
+
+    <!-- Gene Info -->
     <table id="geneInfo" style="margin-bottom: 2rem;">
         <tbody>
         <tr>
-            <td rowspan="3"><strong>Gene Information</strong></td>
+            <td rowspan="4"><strong>Gene Information</strong></td>
             <td><strong>Gene Symbol</strong></td>
             <td>{{ first_gene.gene_symbol }}</td>
         </tr>
@@ -20,23 +25,38 @@
             <td>{{ first_gene.gene_id }}</td>
         </tr>
         <tr>
-            <td colspan="2"></td>
+            <td><strong>Time Cluster</strong></td>
+            <td>{{ first_gene.time_cluster or '-'}}</td>
         </tr>
         <tr>
-            <td rowspan="4"><strong>TPM Values</strong></td>
+            <td><strong>Immune Process</strong></td>
+            <td>{{ first_gene.immune_process or '-'}}</td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+        </tr>
+        <tr>
+            <td rowspan="3"><strong>TPM Values</strong></td>
             <td><strong>Control</strong></td>
             <td>{{ first_gene.tpm_ctrl if first_gene.tpm_ctrl else '-' }}</td>
-        </tr>
-        <tr>
-            <td><strong>IMD</strong></td>
-            <td>{{ first_gene.tpm_imd if first_gene.tpm_imd else '-' }}</td>
         </tr>
         <tr>
             <td><strong>20E</strong></td>
             <td>{{ first_gene.tpm_20e if first_gene.tpm_20e else '-' }}</td>
         </tr>
+        <tr>
+            <td><strong>IMD</strong></td>
+            <td>{{ first_gene.tpm_imd if first_gene.tpm_imd else '-' }}</td>
+        </tr>
         </tbody>
     </table>
+
+    <!-- Download Buttons -->
+    <div style="margin-bottom: 1.5rem;">
+        <button onclick="downloadCSV()" class="download-btn">Download CSV</button>
+        <button onclick="downloadTSV()" class="download-btn">Download TSV</button>
+        <button onclick="downloadExcel()" class="download-btn">Download Excel</button>
+    </div>
 
     <!-- Enhancer Table -->
     <table id="enhancerTable" class="display" style="width:100%;">
@@ -70,16 +90,98 @@
         </tbody>
     </table>
 
-    <!-- Chart at the bottom -->
+    <!-- Visualization Section -->
     <div class="chart-container">
         <h4>Activity Score Distribution</h4>
-        <div id="activity_histogram" style="width: 100%; height: 400px;"></div>
+        <div id="activity_histogram" style="width: 100%; height: 500px;"></div>
     </div>
 
     <!-- Store data -->
     <script id="histogram-data" type="application/json">
     {
         "scores": {{ enhancers | map(attribute='act_score') | list | tojson }}
+    }
+    </script>
+
+    <script>
+    function getFileName() {
+        const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
+        const condition = $('#tab2_condition').val() || 'All';
+        const date = new Date().toISOString().split('T')[0];
+        return `Gene_${gene}_Enhancers_${condition}_${date}`;
+    }
+
+    function tableToArray(tableId) {
+        const table = document.getElementById(tableId);
+        const data = [];
+
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        data.push(headers);
+
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                // Get text content, removing the link but keeping the text
+                row.push(td.textContent.trim());
+            });
+            data.push(row);
+        });
+
+        return data;
+    }
+
+    function downloadCSV() {
+        const data = tableToArray('enhancerTable');
+        const csv = data.map(row =>
+            row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.csv';
+        link.click();
+    }
+
+    function downloadTSV() {
+        const data = tableToArray('enhancerTable');
+        const tsv = data.map(row =>
+            row.map(cell => cell.replace(/\t/g, ' ')).join('\t')
+        ).join('\n');
+
+        const blob = new Blob([tsv], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.tsv';
+        link.click();
+    }
+
+    function downloadExcel() {
+        const data = tableToArray('enhancerTable');
+        let excel = '<?xml version="1.0"?>\n';
+        excel += '<?mso-application progid="Excel.Sheet"?>\n';
+        excel += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
+        excel += ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+        excel += '<Worksheet ss:Name="Sheet1">\n<Table>\n';
+
+        data.forEach(row => {
+            excel += '<Row>\n';
+            row.forEach(cell => {
+                excel += `<Cell><Data ss:Type="String">${cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Data></Cell>\n`;
+            });
+            excel += '</Row>\n';
+        });
+
+        excel += '</Table>\n</Worksheet>\n</Workbook>';
+
+        const blob = new Blob([excel], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.xls';
+        link.click();
     }
     </script>
 

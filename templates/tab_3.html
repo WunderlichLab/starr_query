@@ -5,62 +5,128 @@
 {% endif %}
 
 {% if enhancers %}
-    <div style="margin-bottom: 1em;">
-        <strong>Total Results Found: {{ enhancers|length }}</strong>
+    <!-- Results Summary -->
+    <div style="margin-bottom: 1.5rem; padding: 0.75rem; background: #f8fafb; border-left: 4px solid #2c5aa0; border-radius: 4px;">
+        <strong style="color: #2c5aa0;">Total Results Found: {{ enhancers|length }}</strong>
     </div>
 
-    <!-- Enhancer Table -->
+    <!-- Download Buttons -->
+    <div style="margin-bottom: 1.5rem;">
+        <button onclick="downloadCSV()" class="download-btn">Download CSV</button>
+        <button onclick="downloadTSV()" class="download-btn">Download TSV</button>
+        <button onclick="downloadExcel()" class="download-btn">Download Excel</button>
+    </div>
+
+    <!-- Display Table with Rowspans -->
     <table id="activityClassTable" class="display" style="width:100%;">
         <thead>
         <tr>
             <th>Enhancer Name</th>
             <th>Activity Class</th>
             <th>Accessibility</th>
+            <th>Gene Symbol</th>
             <th>Gene ID</th>
-            <th>Distance to Enhancer</th>
-            <th>Time Cluster</th>
-            <th>Broad Immune Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set grouped_enhancers = {} %}
+        {% for e in enhancers %}
+            {% set key = e.enhancer_name + '|' + (e.activity_class or '') + '|' + (e.accessibility or '') %}
+            {% if key not in grouped_enhancers %}
+                {% set _ = grouped_enhancers.update({key: []}) %}
+            {% endif %}
+            {% set _ = grouped_enhancers[key].append(e) %}
+        {% endfor %}
+
+        {% for key, genes in grouped_enhancers.items() %}
+            {% set parts = key.split('|') %}
+            {% set enhancer_name = parts[0] %}
+            {% set activity_class = parts[1] %}
+            {% set accessibility = parts[2] %}
+            {% set gene_count = genes|length %}
+
+            {% for gene in genes %}
+                <tr>
+                    {% if loop.first %}
+                        <td rowspan="{{ gene_count }}">
+                            {% if enhancer_name %}
+                                {% set name_parts = enhancer_name.split(':') %}
+                                {% if name_parts|length == 2 %}
+                                    {% set chr = name_parts[0] %}
+                                    {% set coords = name_parts[1].split('-') %}
+                                    {% if coords|length == 2 %}
+                                        {% set start = coords[0]|int %}
+                                        {% set end = coords[1]|int %}
+                                        {% set window_start = [0, start - 5000]|max %}
+                                        {% set window_end = end + 5000 %}
+                                        <a href="https://genome.ucsc.edu/s/lbcohen/immune_enhancers?position={{ chr }}:{{ window_start }}-{{ window_end }}" target="_blank">
+                                            {{ enhancer_name }}
+                                        </a>
+                                    {% else %}
+                                        {{ enhancer_name }}
+                                    {% endif %}
+                                {% else %}
+                                    {{ enhancer_name }}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td rowspan="{{ gene_count }}">{{ activity_class or '-' }}</td>
+                        <td rowspan="{{ gene_count }}">{{ accessibility or '-'}}</td>
+                    {% endif %}
+                    <td>{{ gene.gene_symbol or '-' }}</td>
+                    <td>{{ gene.gene_id or '-' }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Hidden Flattened Table for Downloads -->
+    <table id="downloadTable" style="display: none;">
+        <thead>
+        <tr>
+            <th>Enhancer Name</th>
+            <th>Activity Class</th>
+            <th>Accessibility</th>
+            <th>Gene Symbol</th>
+            <th>Gene ID</th>
         </tr>
         </thead>
         <tbody>
         {% for e in enhancers %}
             <tr>
-                <td>{{ e.enhancer_name or '-' }}</td>
-                <td>{{ e.activity_class or '-' }}</td>
-                <td>{{ e.accessibility or '-'}}</td>
-                <td>{{ e.gene_id or '-' }}</td>
-                <td>{{ e.dist_to_enh if e.dist_to_enh is not none else '-' }}</td>
-                <td>{{ e.time_cluster or '-' }}</td>
-                <td>{{ e.broad_immune_role or '-' }}</td>
+                <td>{{ e.enhancer_name or '' }}</td>
+                <td>{{ e.activity_class or '' }}</td>
+                <td>{{ e.accessibility or ''}}</td>
+                <td>{{ e.gene_symbol or '' }}</td>
+                <td>{{ e.gene_id or '' }}</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 
-    <!-- Visualization Controls at the bottom -->
-    <div class="chart-container" style="margin-top: 2rem;">
+    <!-- Visualization Section -->
+    <div class="chart-container">
         <h4>Data Visualization</h4>
-        <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <label>
-                    Chart Type:
-                    <select id="chart_type">
+        <div style="background: #f5f7fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #ddd;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <label style="display: flex; flex-direction: column;">
+                    <span style="margin-bottom: 0.5rem; font-weight: 600; color: #333;">Chart Type:</span>
+                    <select id="chart_type" style="padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
                         <option value="bar">Bar Chart</option>
                         <option value="pie">Pie Chart</option>
                     </select>
                 </label>
-                <label>
-                    Group By:
-                    <select id="x_axis">
+                <label style="display: flex; flex-direction: column;">
+                    <span style="margin-bottom: 0.5rem; font-weight: 600; color: #333;">Group By:</span>
+                    <select id="x_axis" style="padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;">
                         <option value="activity_class">Activity Class</option>
                         <option value="accessibility">Accessibility</option>
-                        <option value="time_cluster">Time Cluster</option>
-                        <option value="broad_immune_role">Broad Immune Role</option>
                     </select>
                 </label>
-                <button onclick="updateTab3Chart()" style="align-self: end; padding: 0.6rem 1.5rem; background-color: #2c5aa0; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                    Update Chart
-                </button>
+                <button onclick="updateTab3Chart()" class="download-btn">Update Chart</button>
             </div>
         </div>
         <div id="tab3_chart" style="width: 100%; height: 500px;"></div>
@@ -69,6 +135,87 @@
     <!-- Store data for charts -->
     <script id="tab3-data" type="application/json">
     {{ enhancers | tojson }}
+    </script>
+
+    <script>
+    function getFileName() {
+        const actClass = $('#tab3_activity_class').val() || 'All';
+        const access = $('#tab3_accessibility').val() || 'All';
+        const date = new Date().toISOString().split('T')[0];
+        return `ActivityClass_${actClass}_${access}_${date}`;
+    }
+
+    function tableToArray(tableId) {
+        const table = document.getElementById(tableId);
+        const data = [];
+
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        data.push(headers);
+
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push(td.textContent.trim());
+            });
+            data.push(row);
+        });
+
+        return data;
+    }
+
+    function downloadCSV() {
+        const data = tableToArray('downloadTable');
+        const csv = data.map(row =>
+            row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.csv';
+        link.click();
+    }
+
+    function downloadTSV() {
+        const data = tableToArray('downloadTable');
+        const tsv = data.map(row =>
+            row.map(cell => cell.replace(/\t/g, ' ')).join('\t')
+        ).join('\n');
+
+        const blob = new Blob([tsv], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.tsv';
+        link.click();
+    }
+
+    function downloadExcel() {
+        const data = tableToArray('downloadTable');
+        let excel = '<?xml version="1.0"?>\n';
+        excel += '<?mso-application progid="Excel.Sheet"?>\n';
+        excel += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
+        excel += ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+        excel += '<Worksheet ss:Name="Sheet1">\n<Table>\n';
+
+        data.forEach(row => {
+            excel += '<Row>\n';
+            row.forEach(cell => {
+                excel += `<Cell><Data ss:Type="String">${cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Data></Cell>\n`;
+            });
+            excel += '</Row>\n';
+        });
+
+        excel += '</Table>\n</Worksheet>\n</Workbook>';
+
+        const blob = new Blob([excel], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.xls';
+        link.click();
+    }
     </script>
 
 {% elif not error_message %}

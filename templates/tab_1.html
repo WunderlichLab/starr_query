@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 {% if error_message %}
     <div style="color: #d32f2f; background-color: #ffebee; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
         {{ error_message }}
@@ -6,27 +5,41 @@
 {% endif %}
 
 {% if enhancers %}
+    <!-- Results Summary -->
+    <div style="margin-bottom: 1.5rem; padding: 0.75rem; background: #f8fafb; border-left: 4px solid #2c5aa0; border-radius: 4px;">
+        <strong style="color: #2c5aa0;">Total Results Found: {{ enhancers|length }}</strong>
+    </div>
+
+    <!-- Download Buttons -->
+    <div style="margin-bottom: 1.5rem;">
+        <button onclick="downloadCSV()" class="download-btn">Download CSV</button>
+        <button onclick="downloadTSV()" class="download-btn">Download TSV</button>
+        <button onclick="downloadExcel()" class="download-btn">Download Excel</button>
+    </div>
+
+    <!-- Display Table -->
     <table id="geneTable" class="display" style="width: 100%;">
         <thead>
         <tr>
-            <th>Enhancer ID</th>
-            <th>Enhancer Length</th>
-            <th>Experimental Condition</th>
-            <th>Activity Score</th>
-            <th>Gene Symbol</th>
-            <th>Accessibility</th>
-            <th>TPM Control</th>
-            <th>TPM IMD</th>
-            <th>TPM 20E</th>
-            <th>Immune Process</th>
-            <th>Time Cluster</th>
+            <th rowspan="2">Enhancer ID</th>
+            <th rowspan="2">Enhancer Length</th>
+            <th rowspan="2">Experimental Condition</th>
+            <th rowspan="2">Activity Score</th>
+            <th rowspan="2">Accessibility</th>
+            <th rowspan="2">Gene Symbol</th>
+            <th colspan="3">TPM Values</th>
+            <th rowspan="2">Immune Process</th>
+            <th rowspan="2">Time Cluster</th>
+        </tr>
+        <tr>
+            <th>Control</th>
+            <th>20E</th>
+            <th>IMD</th>
         </tr>
         </thead>
-
         <tbody>
         {% for e in enhancers %}
             {% set total_genes = e.conditions | map(attribute='genes') | map('length') | sum %}
-            {% set condition_loop = loop %}
             {% for c in e.conditions %}
                 {% set gene_loop = loop %}
                 {% for g in c.genes %}
@@ -39,17 +52,15 @@
                             </td>
                             <td rowspan="{{ total_genes }}">{{ e.en_length }}</td>
                         {% endif %}
-
                         {% if loop.first %}
                             <td rowspan="{{ c.genes|length }}">{{ c.exp_condition or '-' }}</td>
                             <td rowspan="{{ c.genes|length }}">{{ c.activity if c.activity else '-' }}</td>
+                            <td rowspan="{{ c.genes|length }}">{{ g.accessibility or '-'}}</td>
                         {% endif %}
-
                         <td>{{ g.gene_symbol or g.gene_id or '-'}}</td>
-                        <td>{{ g.accessibility or '-'}}</td>
                         <td>{{ '%.2f'|format(g.tpm_ctrl) if g.tpm_ctrl else '-'}}</td>
-                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd else '-' }}</td>
                         <td>{{ '%.2f'|format(g.tpm_20e) if g.tpm_20e else '-' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd else '-' }}</td>
                         <td>{{ g.immune_process or '-' }}</td>
                         <td>{{ g.time_cluster or '-' }}</td>
                     </tr>
@@ -58,6 +69,150 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <!-- Hidden Flattened Table for Downloads -->
+    <table id="downloadTable" style="display: none;">
+        <thead>
+        <tr>
+            <th>Enhancer ID</th>
+            <th>Enhancer Length</th>
+            <th>Chromosome</th>
+            <th>Window Start</th>
+            <th>Window End</th>
+            <th>Experimental Condition</th>
+            <th>Activity Score</th>
+            <th>Accessibility</th>
+            <th>Gene Symbol</th>
+            <th>Gene ID</th>
+            <th>TPM Control</th>
+            <th>TPM 20E</th>
+            <th>TPM IMD</th>
+            <th>Immune Process</th>
+            <th>Time Cluster</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for e in enhancers %}
+            {% for c in e.conditions %}
+                {% for g in c.genes %}
+                    <tr>
+                        <td>{{ e.enhancer_id }}</td>
+                        <td>{{ e.en_length }}</td>
+                        <td>{{ e.chromosome }}</td>
+                        <td>{{ e.window_start }}</td>
+                        <td>{{ e.window_end }}</td>
+                        <td>{{ c.exp_condition or '' }}</td>
+                        <td>{{ c.activity if c.activity else '' }}</td>
+                        <td>{{ g.accessibility or ''}}</td>
+                        <td>{{ g.gene_symbol or ''}}</td>
+                        <td>{{ g.gene_id or ''}}</td>
+                        <td>{{ '%.2f'|format(g.tpm_ctrl) if g.tpm_ctrl else ''}}</td>
+                        <td>{{ '%.2f'|format(g.tpm_20e) if g.tpm_20e else '' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd else '' }}</td>
+                        <td>{{ g.immune_process or '' }}</td>
+                        <td>{{ g.time_cluster or '' }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Visualization Section -->
+    <div class="chart-container">
+        <h4>Enhancers by Experimental Condition</h4>
+        <div id="condition_pie_chart" style="width: 100%; height: 500px;"></div>
+    </div>
+
+    <!-- Store chart data -->
+    <script id="chart-data" type="application/json">
+    {
+        "conditions": {{ enhancers | map(attribute='conditions') | list | tojson }}
+    }
+    </script>
+
+    <script>
+    function getFileName() {
+        const chr = $('#enhancer_chr').val() || 'All';
+        const enh = $('#enhancer_name').val() || '';
+        const condition = $('#tab1_condition').val() || 'All';
+        const name = enh || `${chr}_Region`;
+        const date = new Date().toISOString().split('T')[0];
+        return `Enhancers_${name}_${condition}_${date}`;
+    }
+
+    function tableToArray(tableId) {
+        const table = document.getElementById(tableId);
+        const data = [];
+
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent.trim());
+        });
+        data.push(headers);
+
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const row = [];
+            tr.querySelectorAll('td').forEach(td => {
+                row.push(td.textContent.trim());
+            });
+            data.push(row);
+        });
+
+        return data;
+    }
+
+    function downloadCSV() {
+        const data = tableToArray('downloadTable');
+        const csv = data.map(row =>
+            row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')
+        ).join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.csv';
+        link.click();
+    }
+
+    function downloadTSV() {
+        const data = tableToArray('downloadTable');
+        const tsv = data.map(row =>
+            row.map(cell => cell.replace(/\t/g, ' ')).join('\t')
+        ).join('\n');
+
+        const blob = new Blob([tsv], { type: 'text/tab-separated-values;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.tsv';
+        link.click();
+    }
+
+    function downloadExcel() {
+        const data = tableToArray('downloadTable');
+        let excel = '<?xml version="1.0"?>\n';
+        excel += '<?mso-application progid="Excel.Sheet"?>\n';
+        excel += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
+        excel += ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+        excel += '<Worksheet ss:Name="Sheet1">\n<Table>\n';
+
+        data.forEach(row => {
+            excel += '<Row>\n';
+            row.forEach(cell => {
+                excel += `<Cell><Data ss:Type="String">${cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Data></Cell>\n`;
+            });
+            excel += '</Row>\n';
+        });
+
+        excel += '</Table>\n</Worksheet>\n</Workbook>';
+
+        const blob = new Blob([excel], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = getFileName() + '.xls';
+        link.click();
+    }
+    </script>
 
 {% elif not error_message %}
     <p>No enhancers found matching your criteria.</p>
