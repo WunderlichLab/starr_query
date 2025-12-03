@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import mariadb
 import os
 from dotenv import load_dotenv
@@ -59,6 +59,11 @@ def get_filter_options():
             "SELECT DISTINCT broad_immune_role FROM Activity_class_info WHERE broad_immune_role IS NOT NULL ORDER BY broad_immune_role;")
         broad_immune_roles = [row[0] for row in cursor.fetchall()]
 
+        # Get unique time_clusters for tab 3
+        cursor.execute(
+            "SELECT DISTINCT time_cluster FROM Activity_class_info WHERE time_cluster IS NOT NULL ORDER BY time_cluster;")
+        time_clusters_tab3 = [row[0] for row in cursor.fetchall()]
+
         conn.close()
         filters = {
             'conditions': conditions,
@@ -66,7 +71,8 @@ def get_filter_options():
             'accessibilities': accessibilities,
             'time_clusters': time_clusters,
             'immune_processes': immune_processes,
-            'broad_immune_roles': broad_immune_roles
+            'broad_immune_roles': broad_immune_roles,
+            'time_clusters_tab3': time_clusters_tab3
         }
 
         return filters
@@ -79,7 +85,8 @@ def get_filter_options():
             'accessibilities': [],
             'time_clusters': [],
             'immune_processes': [],
-            'broad_immune_roles': []
+            'broad_immune_roles': [],
+            'time_clusters_tab3': []
         }
 
 ## Tab 1
@@ -101,8 +108,8 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
                        g.symbol         AS gene_symbol,
                        g.geneid         AS gene_id,
                        g.tpm_ctrl       AS tpm_ctrl,
-                       g.tpm_imd        AS tpm_imd,
                        g.tpm_20e        AS tpm_20e,
+                       g.tpm_imd        AS tpm_imd,
                        g.immune_process AS immune_process,
                        g.time_cluster   AS time_cluster
                 FROM Enhancers e
@@ -258,7 +265,9 @@ def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_con
             g.tpm_20e AS tpm_20e,
             e.chromosome AS chromosome,
             e.start AS start,
-            e.end AS end
+            e.end AS end,
+            g.time_cluster AS time_cluster,
+            g.immune_process AS immune_process
         FROM Genes g
         JOIN Associations a ON g.gid = a.gid
         JOIN Enhancers e ON a.eid = e.eid
@@ -301,30 +310,38 @@ def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_con
         return []
 
 
-
 ## Tab 3
-def search_by_activity_class(activity_class=None,
-                             time_cluster=None, broad_immune_role=None, accessibility=None):
-    """Search enhancers by activity class and additional filters"""
+def search_by_activity_class(chr=None, start=None, end=None, enhancer_name=None,
+                             activity_class=None, accessibility=None):
+    """Search enhancers by genomic region and/or activity class and accessibility"""
     try:
         conn = connect_db()
         cursor = conn.cursor()
 
         query = """
-                SELECT ac.ac_eid            AS enhancer_id,
-                       ac.enhancer_name     AS enhancer_name,
-                       ac.activity_class    AS activity_class,
-                       ac.accessibility     AS accessibility,
-                       ac.geneid            AS gene_id,
-                       ac.gene_symbol        AS gene_symbol,
-                       ac.dist_to_enh       AS dist_to_enh,
-                       ac.time_cluster      AS time_cluster,
-                       ac.broad_immune_role AS broad_immune_role
+                SELECT ac.ac_eid         AS enhancer_id,
+                       ac.enhancer_name  AS enhancer_name,
+                       ac.activity_class AS activity_class,
+                       ac.accessibility  AS accessibility,
+                       ac.geneid         AS gene_id,
+                       ac.gene_symbol    AS gene_symbol
                 FROM Activity_class_info AS ac
                 WHERE 1 = 1
                 """
 
         params = []
+
+        # Check if coordinates are provided
+        if chr and start is not None and end is not None:
+            # Parse chromosome and coordinates from enhancer_name to match
+            query += """ AND ac.enhancer_name LIKE %s"""
+            region_pattern = f"{chr}:%"
+            params.append(region_pattern)
+
+        # Check if enhancer name is provided
+        elif enhancer_name:
+            query += """ AND ac.enhancer_name = %s"""
+            params.append(enhancer_name)
 
         if activity_class:
             query += " AND activity_class = %s"
@@ -334,18 +351,30 @@ def search_by_activity_class(activity_class=None,
             query += " AND accessibility = %s"
             params.append(accessibility)
 
-        if time_cluster:
-            query += " AND time_cluster = %s"
-            params.append(time_cluster)
-
-        if broad_immune_role:
-            query += " AND broad_immune_role = %s"
-            params.append(broad_immune_role)
-
         query += " ORDER BY enhancer_name, gene_id"
 
         cursor.execute(query, params)
         rows = cursor.fetchall()
+
+        # If coordinates were provided, filter by coordinate range
+        if chr and start is not None and end is not None:
+            filtered_rows = []
+            for row in rows:
+                enhancer_name = row[1]  # enhancer_name is at index 1
+                if enhancer_name and ':' in enhancer_name:
+                    try:
+                        parts = enhancer_name.split(':')
+                        if len(parts) == 2:
+                            coords = parts[1].split('-')
+                            if len(coords) == 2:
+                                enh_start = int(coords[0])
+                                enh_end = int(coords[1])
+                                # Check if enhancer overlaps with the query region
+                                if not (enh_end < start or enh_start > end):
+                                    filtered_rows.append(row)
+                    except (ValueError, IndexError):
+                        continue
+            rows = filtered_rows
 
         # Remove duplicates while preserving order
         seen = set()
@@ -357,7 +386,7 @@ def search_by_activity_class(activity_class=None,
 
         # Convert to dictionaries for template access
         columns = ['enhancer_id', 'enhancer_name', 'activity_class', 'accessibility',
-                   'gene_id', 'gene_symbol', 'dist_to_enh', 'time_cluster', 'broad_immune_role']
+                   'gene_id', 'gene_symbol']
 
         result_dicts = [dict(zip(columns, row)) for row in unique_rows]
 
@@ -368,6 +397,7 @@ def search_by_activity_class(activity_class=None,
     except mariadb.Error as e:
         print(f"Database error: {e}")
         return []
+
 
 
 ## Tab 0
@@ -450,31 +480,45 @@ def find_enhancer():
 ## Tab 3
 @app.route('/activity_class_search', methods=['POST'])
 def activity_class_search():
-    activity_class = request.form.get("activity_class", "").strip()
-    accessibility = request.form.get("accessibility", "").strip()
-    time_cluster = request.form.get("time_cluster", "").strip()
-    broad_immune_role = request.form.get("broad_immune_role", "").strip()
+    # Get genomic region parameters
+    chr = request.form.get('chr', '').strip() or None
+    start_str = request.form.get('start', '').strip() or None
+    end_str = request.form.get('end', '').strip() or None
+    enhancer_name = request.form.get('enhancer_name', '').strip() or None
+
+    # Get activity parameters
+    activity_class = request.form.get("activity_class", "").strip() or None
+    accessibility = request.form.get("accessibility", "").strip() or None
+
+    # Convert start/end to integers if provided
+    start = int(start_str) if start_str else None
+    end = int(end_str) if end_str else None
 
     filter_options = get_filter_options()
 
     enhancers = []
     error_message = ""
 
-    # At least one filter should be applied
-    if not any([activity_class, accessibility, time_cluster, broad_immune_role]):
-        error_message = "Please select at least one filter to search"
+    # Check if at least one search criterion is provided
+    has_coordinates = chr and start is not None and end is not None
+    has_enhancer_name = enhancer_name is not None
+    has_activity_filters = activity_class or accessibility
+
+    if not (has_coordinates or has_enhancer_name or has_activity_filters):
+        error_message = "Please provide either genomic coordinates, enhancer name, or select at least one activity filter"
     else:
         enhancers = search_by_activity_class(
-            activity_class=activity_class if activity_class else None,
-            accessibility=accessibility if accessibility else None,
-            time_cluster=time_cluster if time_cluster else None,
-            broad_immune_role=broad_immune_role if broad_immune_role else None
+            chr=chr,
+            start=start,
+            end=end,
+            enhancer_name=enhancer_name,
+            activity_class=activity_class,
+            accessibility=accessibility
         )
 
         if not enhancers:
             error_message = "No enhancers found matching your criteria"
 
-    # Return only the results div for AJAX requests
     return render_template(
         'tab_3.html',
         enhancers=enhancers,
@@ -483,16 +527,51 @@ def activity_class_search():
     )
 
 
+@app.route('/autocomplete_gene', methods=['GET'])
+def autocomplete_gene():
+    """Autocomplete endpoint for gene symbols"""
+    query = request.args.get('term', '').strip().lower()
+
+    if len(query) < 2:  # Only search if at least 2 characters
+        return jsonify([])
+
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+
+        # Search for gene symbols that start with or contain the query
+        sql = """
+              SELECT DISTINCT symbol, geneid
+              FROM Genes
+              WHERE LOWER(symbol) LIKE %s
+                 OR LOWER(geneid) LIKE %s
+              ORDER BY symbol LIMIT 20 \
+              """
+
+        search_pattern = f"%{query}%"
+        cursor.execute(sql, (search_pattern, search_pattern))
+        results = cursor.fetchall()
+
+        # Format results for autocomplete
+        suggestions = []
+        for row in results:
+            symbol, geneid = row
+            if symbol:
+                suggestions.append({
+                    'label': f"{symbol} ({geneid})",
+                    'value': symbol,
+                    'geneid': geneid
+                })
+
+        conn.close()
+        return jsonify(suggestions)
+
+    except mariadb.Error as e:
+        print(f"Error in autocomplete: {e}")
+        return jsonify([])
+
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-# TODO: If the activity score threshold filter has no value, use 0 automatically
-# TODO: Recheck introduction tab
-# TODO: Add visualization info to the tabs
-# TODO: Work on the buttons for submit and reset. Table column widths and row heights
-
 
 
 
