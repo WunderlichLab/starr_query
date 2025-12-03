@@ -1,4 +1,6 @@
-/* --- General Page Layout --- */
+/* ========================================
+   GENERAL PAGE LAYOUT
+   ======================================== */
 body {
     font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
     background-color: #f5f7fa;
@@ -8,7 +10,9 @@ body {
     line-height: 1.6;
 }
 
-/* --- Header --- */
+/* ========================================
+   HEADER
+   ======================================== */
 .header {
     display: flex;
     align-items: center;
@@ -35,7 +39,9 @@ body {
     object-fit: contain;
 }
 
-/* --- Tab Styling --- */
+/* ========================================
+   TAB NAVIGATION
+   ======================================== */
 .tabs {
     display: flex;
     gap: 0.5rem;
@@ -69,7 +75,9 @@ body {
     font-weight: 600;
 }
 
-/* --- Tab Content --- */
+/* ========================================
+   TAB CONTENT
+   ======================================== */
 .tab-content {
     display: none;
     background-color: white;
@@ -84,132 +92,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* --- Form Styling --- */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.form-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.form-inputs label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.form-inputs input,
-.form-inputs select {
-    padding: 0.7rem 0.9rem;
-    border: 1px solid #d0d8e0;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    font-family: inherit;
-    transition: all 0.2s ease;
-    background-color: #fafbfc;
-}
-
-.form-inputs input:focus,
-.form-inputs select:focus {
-    outline: none;
-    border-color: #2c5aa0;
-    background-color: white;
-    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
-}
-
-.form-filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
-    padding: 1.5rem;
-    background-color: #f8fafb;
-    border-radius: 6px;
-    border-left: 4px solid #2c5aa0;
-}
-
-.form-filters label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.form-filters label span {
-    font-weight: 600;
-    color: #2c5aa0;
-    font-size: 0.9rem;
-}
-
-.form-filters input,
-.form-filters select {
-    padding: 0.6rem 0.8rem;
-    border: 1px solid #d0d8e0;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-family: inherit;
-    background-color: white;
-    transition: all 0.2s ease;
-}
-
-.form-filters input:focus,
-.form-filters select:focus {
-    outline: none;
-    border-color: #2c5aa0;
-    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
-}
-
-.form-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-button[type="submit"],
-button[type="reset"] {
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-button[type="submit"] {
-    background-color: #2c5aa0;
-    color: white;
-}
-
-button[type="submit"]:hover {
-    background-color: #1e3f75;
-    box-shadow: 0 4px 12px rgba(44, 90, 160, 0.3);
-}
-
-button[type="reset"] {
-    background-color: #e8eef5;
-    color: #2c5aa0;
-    border: 1px solid #d0d8e0;
-}
-
-button[type="reset"]:hover {
-    background-color: #d8dfe8;
-}
-
-/* --- Headings --- */
+/* ========================================
+   HEADINGS
+   ======================================== */
 h1 {
     color: #2c5aa0;
     font-size: 2.5em;
@@ -237,7 +126,85 @@ h4 {
     font-weight: 600;
 }
 
-/* --- Table Styling --- */
+/* ========================================
+   FORM STYLING
+   ======================================== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #d0d8e0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    background-color: #fafbfc;
+    width: 100%;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: #2c5aa0;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+button[type="submit"],
+button[type="reset"],
+.download-btn {
+    padding: 0.7rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #2c5aa0 0%, #1e3a70 100%);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+button[type="submit"]:hover,
+button[type="reset"]:hover,
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #1e3f75 0%, #142851 100%);
+}
+
+button[type="reset"] {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.download-btn {
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+/* ========================================
+   TABLES
+   ======================================== */
 table {
     border-collapse: collapse;
     width: 100%;
@@ -260,13 +227,43 @@ th {
 td {
     padding: 12px 15px;
     border-bottom: 1px solid #e0e8eb;
+    text-align: center;
 }
 
 tr:hover {
     background-color: #f8fafb;
 }
 
-/* --- Info Boxes --- */
+/* Table Column Widths - Tab 1 */
+#geneTable th:nth-child(1), #geneTable td:nth-child(1) { width: 15%; }
+#geneTable th:nth-child(2), #geneTable td:nth-child(2) { width: 8%; }
+#geneTable th:nth-child(3), #geneTable td:nth-child(3) { width: 12%; }
+#geneTable th:nth-child(4), #geneTable td:nth-child(4) { width: 10%; }
+#geneTable th:nth-child(5), #geneTable td:nth-child(5) { width: 12%; }
+#geneTable th:nth-child(6), #geneTable td:nth-child(6) { width: 10%; }
+#geneTable th:nth-child(7), #geneTable td:nth-child(7) { width: 8%; }
+#geneTable th:nth-child(8), #geneTable td:nth-child(8) { width: 8%; }
+#geneTable th:nth-child(9), #geneTable td:nth-child(9) { width: 8%; }
+#geneTable th:nth-child(10), #geneTable td:nth-child(10) { width: 12%; }
+#geneTable th:nth-child(11), #geneTable td:nth-child(11) { width: 7%; }
+
+/* Table Column Widths - Tab 2 */
+#enhancerTable th:nth-child(1), #enhancerTable td:nth-child(1) { width: 18%; }
+#enhancerTable th:nth-child(2), #enhancerTable td:nth-child(2) { width: 13%; }
+#enhancerTable th:nth-child(3), #enhancerTable td:nth-child(3) { width: 15%; }
+#enhancerTable th:nth-child(4), #enhancerTable td:nth-child(4) { width: 10%; }
+#enhancerTable th:nth-child(5), #enhancerTable td:nth-child(5) { width: 10%; }
+
+/* Table Column Widths - Tab 3 */
+#activityClassTable th:nth-child(1), #activityClassTable td:nth-child(1) { width: 30%; }
+#activityClassTable th:nth-child(2), #activityClassTable td:nth-child(2) { width: 20%; }
+#activityClassTable th:nth-child(3), #activityClassTable td:nth-child(3) { width: 15%; }
+#activityClassTable th:nth-child(4), #activityClassTable td:nth-child(4) { width: 20%; }
+#activityClassTable th:nth-child(5), #activityClassTable td:nth-child(5) { width: 15%; }
+
+/* ========================================
+   INFO BOXES
+   ======================================== */
 .info-boxes {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -301,7 +298,9 @@ tr:hover {
     color: #555;
 }
 
-/* --- Lists --- */
+/* ========================================
+   LISTS & LINKS
+   ======================================== */
 ul {
     margin: 1rem 0;
     padding-left: 1.5rem;
@@ -312,7 +311,6 @@ ul li {
     line-height: 1.8;
 }
 
-/* --- Links --- */
 a {
     color: #2c5aa0;
     text-decoration: none;
@@ -324,43 +322,9 @@ a:hover {
     text-decoration: underline;
 }
 
-/* --- Download Button Styling --- */
-div.dt-buttons::before {
-    content: 'Download:';
-    font-weight: 600;
-    margin-right: 0.8em;
-    color: #2c5aa0;
-}
-
-.dt-button {
-    padding: 0.6rem 1rem !important;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-    background-color: #2c5aa0 !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 4px !important;
-    transition: all 0.2s ease !important;
-    cursor: pointer !important;
-}
-
-.dt-button:hover {
-    background-color: #1e3f75 !important;
-    box-shadow: 0 2px 6px rgba(44, 90, 160, 0.3) !important;
-}
-
-.dt-button:not(:last-child) {
-    margin-right: 0.5em !important;
-}
-
-div.dt-buttons {
-    display: inline-flex;
-    gap: 0.5em;
-    margin: 1.5rem 0;
-    flex-wrap: wrap;
-}
-
-/* --- Page Description --- */
+/* ========================================
+   PAGE DESCRIPTION
+   ======================================== */
 #description {
     font-size: 1.1rem;
     color: #555;
@@ -372,54 +336,90 @@ div.dt-buttons {
     border-left: 4px solid #2c5aa0;
 }
 
-/* --- Responsive --- */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    #title {
-        font-size: 1.5rem;
-    }
-
-    .tabs {
-        gap: 0.25rem;
-    }
-
-    .tab {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
-
-    .tab-content {
-        padding: 1.5rem;
-    }
-
-    .form-filters {
-        grid-template-columns: 1fr;
-    }
-
-    .logo {
-        height: 60px;
-    }
-
-    .info-boxes {
-        grid-template-columns: 1fr;
-    }
-
-    .form-buttons {
-        flex-direction: column;
-    }
-
-    button[type="submit"],
-    button[type="reset"] {
-        width: 100%;
-    }
+/* ========================================
+   CHART CONTAINER
+   ======================================== */
+.chart-container {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: #f8fafb;
+    border-radius: 8px;
+    border: 1px solid #e0e8eb;
 }
 
-/* --- DataTables Pagination Fix --- */
+.chart-container h4 {
+    margin-top: 0;
+    color: #2c5aa0;
+}
+
+/* ========================================
+   AUTOCOMPLETE
+   ======================================== */
+.autocomplete-suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    width: calc(100% - 2px);
+    margin-top: -1px;
+}
+
+.autocomplete-suggestions.active {
+    display: block;
+}
+
+.autocomplete-suggestion {
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.autocomplete-suggestion:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-suggestion:hover,
+.autocomplete-suggestion.selected {
+    background-color: #e8f4f8;
+}
+
+.autocomplete-suggestion .gene-symbol {
+    font-weight: 600;
+    color: #2c5aa0;
+}
+
+.autocomplete-suggestion .gene-id {
+    font-size: 0.85em;
+    color: #666;
+    margin-left: 0.5rem;
+}
+
+.autocomplete-loading,
+.autocomplete-no-results {
+    padding: 0.7rem 1rem;
+    text-align: center;
+    color: #666;
+}
+
+.autocomplete-no-results {
+    color: #999;
+}
+
+#gene_symbol.autocomplete-active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* ========================================
+   DATATABLES CUSTOMIZATION
+   ======================================== */
 .dataTables_wrapper .dataTables_paginate {
     margin-top: 1rem !important;
     text-align: center;
@@ -462,21 +462,6 @@ div.dt-buttons {
     font-size: 0.9rem;
 }
 
-/* --- Chart Container Styling --- */
-.chart-container {
-    margin: 2rem 0;
-    padding: 1.5rem;
-    background-color: #f8fafb;
-    border-radius: 8px;
-    border: 1px solid #e0e8eb;
-}
-
-.chart-container h4 {
-    margin-top: 0;
-    color: #2c5aa0;
-}
-
-/* --- DataTables Scroll Container --- */
 .dataTables_wrapper .dataTables_scroll {
     margin-bottom: 1rem;
 }
@@ -485,46 +470,45 @@ div.dt-buttons {
     border-bottom: 1px solid #e0e8eb !important;
 }
 
-/* --- Visualization Controls --- */
-.viz-controls {
-    background: #f5f7fa;
-    padding: 1rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    border-left: 4px solid #2c5aa0;
-}
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 
-.viz-controls h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-}
+    #title {
+        font-size: 1.5rem;
+    }
 
-.viz-controls label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    font-weight: 500;
-    color: #555;
-}
+    .logo {
+        height: 60px;
+    }
 
-.viz-controls select {
-    padding: 0.6rem;
-    border: 1px solid #d0d8e0;
-    border-radius: 4px;
-    background-color: white;
-}
+    .tabs {
+        gap: 0.25rem;
+    }
 
-.viz-controls button {
-    align-self: flex-end;
-    padding: 0.6rem 1.5rem;
-    background-color: #2c5aa0;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-}
+    .tab {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
 
-.viz-controls button:hover {
-    background-color: #1e3f75;
+    .tab-content {
+        padding: 1.5rem;
+    }
+
+    .info-boxes {
+        grid-template-columns: 1fr;
+    }
+
+    button[type="submit"],
+    button[type="reset"],
+    .download-btn {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
 }
