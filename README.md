@@ -1,77 +1,150 @@
-# Large-scale Enhancer Screen Database
+# Drosophila Immune Enhancer Atlas
 
-This project aims to develop a database to systematically capture and query data from a large-scale enhancer screen.   
+A web-based database for exploring enhancer-gene associations in Drosophila melanogaster immune response, 
+built from STARR-seq data.
 
-Enhancers are sequences that promote the expression of the associated gene sequences. The underlying dataset utilizes STARR-seq to measure Drosophila enhancer activity and gene expression across experimental conditions exploring regulatory mechanisms in immune responses. At the moment, the dataset provided by the Wunderlich lab contains data from three experimental conditions:  
-- Control
-- Hormone Treatment (20E)
-- Immune Treatment (HKSM with 20E)
-  
-Integrating information regarding: 
-- Genomic Enhancer Coordinates
-- Associated Genes
-- Gene Expression Changes (LogFC)
-- Immune Pathway Annotations
-- Transcription Factor Motifs
-- Enhancer Activity Scores
-  
-Our database will incorporate this data to allow researchers easy access and retrieval of enhancer-gene interactions. It will be designed for supporting structured queries on enhancer activity, gene expression patterns, and motif enrichment.  
+# About This Database
+This website helps you search and visualize how enhancers regulate genes during the Drosophila immune response. 
+The database includes three main search tools:
+
+Search by Proximity (Tab 1): Find genes near a specific enhancer by entering chromosomal coordinates or an enhancer name.
+
+Search by Genes (Tab 2): Enter a gene name and find all the enhancers that regulate it.
+
+Search by Activity Info (Tab 3): Find enhancers based on their activity patterns (like activity class or chromatin accessibility). 
+
+All search results can be downloaded as CSV, TSV, or Excel files for further analysis. Each tab also includes visualizations to help you understand the data distribution.
 
 ## Repo Structure
 
 ```
 project_folder/
+├── base_data/
+│   ├── Allsamples_tpm.csv
+│   ├── dmel-all-r6.64.gtf
+│   ├── Drosophila_melanogaster.BDGP6.54.115.gtf
+│   ├── EG_activity_class.csv]
+│   ├── EG_activity_class_modified.csv
+│   ├── EG_all_clean_09_05.csv
+│   ├── EnhancerGene20E_df_clean_09_09.csv
+│   ├── EnhancerGeneCon_df_clean_09_09.csv
+│   └── EnhancerGeneHKSM_df_clean_09_09.csv
+├── processed_data/
+│   ├── associations.csv
+│   ├── enhancer.csv
+│   ├── genes.csv
+│   └── tab3_data.csv
 ├── app.py
 ├── templates/
-│   ├── find_enhancer_results.html
-│   ├── fine_gene_results.html
+│   ├── tab_1.html
+│   ├── tab_2.html
+│   ├── tab_3.html
 │   └── template.html
 ├── templates/
 │   ├── images/
-    │   └── wunderlich_lab_clear.png
+    │   ├── wunder_lab_clear.png
+    │   └── activity_class_venn.png
 │   └── design.css
-├── db_schema.sql
 ├── requirements.txt
-├── 1_creating_files.ipynb   # Preprocessing data
+├── data_extract.ipynb       # Preprocessing data
 ├── create_tables.sql        # Creating tables for database
-├── queries.sql              # Database queries
 └── README.md                # Project description and setup instructions
 ```
-```#``` indicate files not necessary for database website implementation
+
 
 ## Moving Project to New Computer
-### New Computer Requirements
-- internet server (Apache or similar)
-- mod_wsgi (works with Apache to serve flask programs)
-- mariadb
+### What You'll Need
+Before starting, make sure you have these programs installed on your computer:
 
-### Database Structure
-db_schema.sql contains the database structure which contains CREATE TABLE instructions. Restore the structure on the new computer using:
+1. Python 3.8 or newer
+2. Git
+3. MariaDB or MySQL
+
+This is the database software that stores all the enhancer data
+Follow the installation wizard and remember the password you set!
+
+#### Step 1: Download the Data Files
+
+Go to the Google Drive link: [https://drive.google.com/drive/folders/1SoevyQVR2uid_NShFBZ_pLEu-M1_vrhQ?usp=sharing]   
+Download the proccessed_data folder.
+
+#### Step 2: Get the Website Code
+
+Create a folder on your computer where you want to keep the website files.
+
+Open Terminal (Mac/Linux) or Command Prompt (Windows)
+
+Navigate to your folder by typing this command (adjust the path to match where you created your folder):
+
+```cd your/file/path```
+
+Download the code by typing:
+
+```git clone https://github.com/WunderlichLab/starr_query.git```
+
+Move into the downloaded folder:
+
+```cd starr_query```
+
+Move the processed_data folder to starr_query folder
+
+#### Step 3: Set Up the Database
 ```
-mariadb -u your_user -p -e "CREATE DATABASE your_database_name;"
-mariadb -u your_user -p your_database_name < db_schema.sql
-```
-Then, upload the data manually (LOAD DATA LOCAL INFILE) once the tables are created.
-
-### Python Packages
-On the new computer, install all the Python packages with the following:
-```
-pip3 install -r requirements.txt
+CREATE DATABASE enhancer_db;
+ mysql -u root -p enhancer_db < path/to/your/downloaded/create_tables.sql
 ```
 
-### File Organization
-The files will have the same organization as shown earlier (Repo Structure) on the new computer, but the project_folder will be dependent on
-the mod_wsgi setup.
+Replace path/to/your/downloaded/file.sql with the actual location of your file
 
-## Website Tour
-### Introduction tab
-![image](https://github.com/user-attachments/assets/28ec5be2-a0a7-4287-b354-9b02c9a56898)
-### Enhancer→Gene tab
-![image](https://github.com/user-attachments/assets/bde351e7-e686-4433-9ae9-dac4b1a35270)
-### Gene→Enhancer tab
-![image](https://github.com/user-attachments/assets/6b65a835-fc1a-4b1e-b40a-686bb5021f26)
-![image](https://github.com/user-attachments/assets/b1bccfbd-f94f-480b-8f28-1528bcc13cf4)
-### Help Page
-![image](https://github.com/user-attachments/assets/a451fdbb-7b68-48ad-8714-87050f4603d3)
-![image](https://github.com/user-attachments/assets/f9d1d473-31e1-4881-8288-45e4ebbb2103)
+#### Step 4: Configure the Website
 
+Create a configuration file:
+
+In your website folder, create a new file called .env
+You can do this by opening Notepad (Windows) or TextEdit (Mac)
+
+Add these lines to the file (replace the values with your actual database details):
+
+```
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASS=your_database_password
+   DB_NAME=enhancer_db
+   DB_PORT=3306
+```
+Save the file as .env in the main website folder
+
+Make sure it's named exactly .env (with the dot at the beginning)
+
+
+#### Step 5: Install Required Python Packages
+
+In your Terminal/Command Prompt, make sure you're still in the website folder
+Install the packages by typing:
+
+```
+pip install flask mariadb python-dotenv
+```
+Wait for the installation to complete (this might take a minute or two)
+
+#### Step 6: Run the Website!
+
+Start the website by typing:
+
+```
+python app.py
+```
+
+Open your web browser (Chrome, Firefox, Safari, etc.)
+Go to this address:
+
+   http://localhost:5000
+
+That's it! The database should now be running on your computer
+
+
+## Stopping the Website
+When you're done using the database:
+
+Go back to your Terminal/Command Prompt
+Press Ctrl + C to stop the server
