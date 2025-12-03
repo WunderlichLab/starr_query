@@ -11,6 +11,7 @@
 
         <!-- Buttons extension CSS -->
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+
     </head>
   
     <body>
@@ -188,8 +189,8 @@
             Dr. Lianne Cohen for their support and guidance.</p>
 
             <p>This website was originally developed by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course
-            <strong>BF768 Biological Database Analysis</strong> at Boston University, facilitated by Dr. Gary Benson.
-            Following the course, Anushka Dongaonkar continued to expand and maintain the project.</p>
+            BF768 Biological Database Systems at Boston University, facilitated by Dr. Gary Benson.
+            Following the course, Anushka Dongaonkar continued to expand and maintain the project. </p>
 
         </div>
 
@@ -282,24 +283,28 @@
             <div id="enhancer-results"></div>
         </div>
 
+
         <!-- Tab2 -->
         <div id="gene-search" class="tab-content">
             <h4>Enter a gene (symbol eg "Abd-B" or ID eg "FBgn0000119")</h4>
 
             <form id="gene-form" action="{{ url_for('find_enhancer') }}" method="POST">
-                <div style="display:flex; gap:2rem; margin-bottom:1rem;">
-                    <label>
-                        Gene Symbol:<br><input type="text" name="symbol" id="gene_symbol">
+                <div style="display:flex; gap:2rem; margin-bottom:1rem; align-items: flex-end;">
+                    <label style="flex: 1;">
+                        Gene Symbol:<br>
+                        <input type="text" name="symbol" id="gene_symbol" placeholder="Start typing gene name..." autocomplete="off">
+                        <div id="gene-suggestions" class="autocomplete-suggestions"></div>
                     </label>
 
-                    <span style="align-self:center;font-weight:bold;">or</span>
+                    <span style="align-self:center; font-weight:bold; padding-bottom: 0.3rem;">or</span>
 
-                    <label>
-                        Gene ID:<br><input type="text" name="geneid" id="gene_id">
+                    <label style="flex: 1;">
+                        Gene ID:<br>
+                        <input type="text" name="geneid" id="gene_id" placeholder="e.g., FBgn0000119">
                     </label>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom:1rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom:1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
                     <label>
                         Activity Score Threshold:
                         <input type="number" name="activity_score" id="tab2_activity_score" value="0" min="0">
@@ -339,55 +344,85 @@
             <div id="gene-results"></div>
         </div>
 
+
         <!-- Tab3 -->
         <div id="activity-search" class="tab-content">
-            <h4>Search enhancers by Activity Class and other filters</h4>
+            <h4>Search enhancers by chromosomal region OR activity class/accessibility</h4>
+            <p style="font-size: 0.9em; color: #666;">Example coordinates: 2L, start: 3452301, end: 3452810 | Example enhancer: 2L:3452301-3452810</p>
 
             <form id="activity-form" action="{{ url_for('activity_class_search') }}" method="POST">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-                    <label>
-                        Activity Class:
-                        <select name="activity_class" id="tab3_activity_class">
-                            <option value="">-- Activity Class --</option>
-                            {% for ac in filter_options.activity_classes %}
-                                <option value="{{ ac }}">{{ ac }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
+                <!-- Region Search Section -->
+                <div style="background: #f8fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ddd;">
+                    <h5 style="margin-top: 0; color: #2c5aa0;">Search by Genomic Region</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                        <label>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Chromosome:</span>
+                            <select name="chr" id="tab3_chr">
+                                <option value="">-- Select --</option>
+                                <option value="2L">2L</option>
+                                <option value="2R">2R</option>
+                                <option value="3L">3L</option>
+                                <option value="3R">3R</option>
+                                <option value="4">4</option>
+                                <option value="X">X</option>
+                                <option value="Y">Y</option>
+                            </select>
+                        </label>
 
-                    <label>
-                        Accessibility:
-                        <select name="accessibility" id="tab3_accessibility">
-                            <option value="">-- Accessibility --</option>
-                            {% for access in filter_options.accessibilities %}
-                                <option value="{{ access }}">{{ access }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
+                        <label>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Start:</span>
+                            <input type="number" id="tab3_start" name="start" placeholder="e.g., 10426653">
+                        </label>
 
-                    <label>
-                        Time Cluster:
-                        <select name="time_cluster" id="tab3_time_cluster">
-                            <option value="">-- Time Cluster --</option>
-                            {% for tc in filter_options.time_clusters %}
-                                <option value="{{ tc }}">{{ tc }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
+                        <label>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.5rem;">End:</span>
+                            <input type="number" id="tab3_end" name="end" placeholder="e.g., 10427192">
+                        </label>
+                    </div>
 
-                    <label>
-                        Broad Immune Role:
-                        <select name="broad_immune_role" id="tab3_broad_immune_role">
-                            <option value="">-- Broad Immune Role --</option>
-                            {% for bir in filter_options.broad_immune_roles %}
-                                <option value="{{ bir }}">{{ bir }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
+                    <div style="margin: 1rem 0; text-align: center; font-weight: bold; color: #666;">
+                        - OR -
+                    </div>
+
+                    <div style="margin-bottom: 0;">
+                        <label>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Region Name:</span>
+                            <input type="text" name="enhancer_name" id="tab3_enhancer_name"
+                                   placeholder="e.g., 2L:3452301-3452810"
+                                   style="width: 100%; max-width: 400px;">
+                        </label>
+                    </div>
                 </div>
 
-                <button type="submit">Search</button>
-                <button type="reset" style="margin-left: 1rem;">Clear Filters</button>
+                <!-- Activity Class/Accessibility Filters -->
+                <div style="background: #f8fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ddd;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <label>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Activity Class:</span>
+                            <select name="activity_class" id="tab3_activity_class">
+                                <option value="">-- Select Activity Class --</option>
+                                {% for ac in filter_options.activity_classes %}
+                                    <option value="{{ ac }}">{{ ac }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        <label>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Accessibility:</span>
+                            <select name="accessibility" id="tab3_accessibility">
+                                <option value="">-- Select Accessibility --</option>
+                                {% for access in filter_options.accessibilities %}
+                                    <option value="{{ access }}">{{ access }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit">Search</button>
+                    <button type="reset">Clear Filters</button>
+                </div>
             </form>
 
             <div id="activity-results" style="margin-top: 2rem;"></div>
@@ -419,7 +454,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
         <script src="https://www.gstatic.com/charts/loader.js"></script>
 
+
         <script>
+            $.fn.dataTable.ext.errMode = 'none';
+
             $(function(){
                 // Tab switching
                 $('.tab').click(function(){
@@ -431,7 +469,7 @@
                     $('html, body').animate({ scrollTop: 0 }, 600);
                 });
 
-                // Tab 1
+                // Tab 1: Enhancer Search
                 $('#enhancer-form').submit(function(e){
                     e.preventDefault();
                     $.post(this.action, $(this).serialize())
@@ -442,65 +480,31 @@
                             $('#geneTable').DataTable().destroy();
                         }
 
-                        // Add a small delay to ensure DOM is ready
                         setTimeout(() => {
-                            $('#geneTable').DataTable({
-
-                                dom: 'Blfrtip',
-                                buttons: [
-                                    {
-                                        extend: 'csvHtml5',
-                                        title: function() {
-                                            const chr = $('#enhancer_chr').val() || 'All';
-                                            const enh = $('#enhancer_name').val() || '';
-                                            const condition = $('#tab1_condition').val() || 'All';
-                                            const name = enh || `${chr}_Region`;
-                                            return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                        }
-                                    },
-                                    {
-                                        extend: 'csvHtml5',
-                                        text: 'TSV',
-                                        fieldSeparator: '\t',
-                                        extension: '.tsv',
-                                        title: function() {
-                                            const chr = $('#enhancer_chr').val() || 'All';
-                                            const enh = $('#enhancer_name').val() || '';
-                                            const condition = $('#tab1_condition').val() || 'All';
-                                            const name = enh || `${chr}_Region`;
-                                            return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                        }
-                                    },
-                                    {
-                                        extend: 'excelHtml5',
-                                        title: function() {
-                                            const chr = $('#enhancer_chr').val() || 'All';
-                                            const enh = $('#enhancer_name').val() || '';
-                                            const condition = $('#tab1_condition').val() || 'All';
-                                            const name = enh || `${chr}_Region`;
-                                            return `Enhancers_${name}_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                        }
-                                    }
-                                ],
-                                pageLength: 15,
-                                lengthMenu: [10, 15, 25, 50, 100],
-                                order: [[0,'asc']],
-                                pagingType: 'full_numbers',
-                                orderCellsTop: true,
-                                columnDefs: [
-                                    { orderable: false, targets: [] }
-                                ]
-                            });
-
+                            if ($('#geneTable').length) {
+                                $('#geneTable').DataTable({
+                                    pageLength: 15,
+                                    lengthMenu: [10, 15, 25, 50, 100],
+                                    ordering: false,
+                                    paging: true,
+                                    searching: true,
+                                    info: true,
+                                    pagingType: 'full_numbers',
+                                    scrollX: true,
+                                    autoWidth: false
+                                });
+                            }
                             initializeCharts();
-
                             $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
-                        }, 100);
+                        }, 200);
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Form submission failed:', error);
+                        alert('Search failed. Please try again.');
                     });
                 });
 
-
-                // Tab 2: Gene→Enhancer
+                // Tab 2: Gene Search
                 $('#gene-form').submit(function(e){
                     e.preventDefault();
                     $.post(this.action, $(this).serialize())
@@ -508,51 +512,24 @@
                         $('#gene-results').html(html);
 
                         if ($.fn.DataTable.isDataTable('#enhancerTable')) {
-                            $('#enhancerTable').DataTable().clear().destroy();
+                            $('#enhancerTable').DataTable().destroy();
                         }
 
                         setTimeout(() => {
-                            $('#enhancerTable').DataTable({
-                                dom: 'Blfrtip',
-                                buttons: [
-                                    {
-                                        extend: 'csvHtml5',
-                                        title: function() {
-                                            const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
-                                            const condition = $('#tab2_condition').val() || 'All';
-                                            return `Gene_${gene}_Enhancers_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                        }
-                                    },
-                                    {
-                                        extend: 'csvHtml5',
-                                        text: 'TSV',
-                                        fieldSeparator: '\t',
-                                        extension: '.tsv',
-                                        title: function() {
-                                            const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
-                                            const condition = $('#tab2_condition').val() || 'All';
-                                            return `Gene_${gene}_Enhancers_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                        }
-                                    },
-                                    {
-                                        extend: 'excelHtml5',
-                                        title: function() {
-                                            const gene = $('#gene_symbol').val() || $('#gene_id').val() || 'Gene';
-                                            const condition = $('#tab2_condition').val() || 'All';
-                                            return `Gene_${gene}_Enhancers_${condition}_${new Date().toISOString().split('T')[0]}`;
-                                        }
-                                    }
-                                ],
-                                pageLength: 15,
-                                lengthMenu: [10, 15, 25, 50, 100],
-                                order: [[3, 'desc']],
-                                pagingType: 'full_numbers'
-                            });
+                            if ($('#enhancerTable').length) {
+                                $('#enhancerTable').DataTable({
+                                    pageLength: 15,
+                                    lengthMenu: [10, 15, 25, 50, 100],
+                                    order: [[3, 'desc']],
+                                    pagingType: 'full_numbers',
+                                    scrollX: true
+                                });
+                            }
                             initializeCharts();
-
                             $('html, body').animate({ scrollTop: $('#gene-results').offset().top - 100 }, 600);
-                        }, 300);
-                    }).fail(() => alert('Search failed. Please try again.'));
+                        }, 200);
+                    })
+                    .fail(() => alert('Search failed. Please try again.'));
                 });
 
                 // Tab 3: Activity Class Search
@@ -563,55 +540,160 @@
                         $('#activity-results').html(html);
 
                         if ($.fn.DataTable.isDataTable('#activityClassTable')) {
-                            $('#activityClassTable').DataTable().clear().destroy();
+                            $('#activityClassTable').DataTable().destroy();
                         }
 
                         setTimeout(() => {
                             if ($('#activityClassTable').length) {
                                 $('#activityClassTable').DataTable({
-                                    dom: 'Blfrtip',
-                                    buttons: [
-                                        {
-                                            extend: 'csvHtml5',
-                                            title: function() {
-                                                const actClass = $('#tab3_activity_class').val() || 'All';
-                                                const access = $('#tab3_accessibility').val() || 'All';
-                                                return `ActivityClass_${actClass}_${access}_${new Date().toISOString().split('T')[0]}`;
-                                            }
-                                        },
-                                        {
-                                            extend: 'csvHtml5',
-                                            text: 'TSV',
-                                            fieldSeparator: '\t',
-                                            extension: '.tsv',
-                                            title: function() {
-                                                const actClass = $('#tab3_activity_class').val() || 'All';
-                                                const access = $('#tab3_accessibility').val() || 'All';
-                                                return `ActivityClass_${actClass}_${access}_${new Date().toISOString().split('T')[0]}`;
-                                            }
-                                        },
-                                        {
-                                            extend: 'excelHtml5',
-                                            title: function() {
-                                                const actClass = $('#tab3_activity_class').val() || 'All';
-                                                const access = $('#tab3_accessibility').val() || 'All';
-                                                return `ActivityClass_${actClass}_${access}_${new Date().toISOString().split('T')[0]}`;
-                                            }
-                                        }
-                                    ],
                                     pageLength: 15,
                                     lengthMenu: [10, 15, 25, 50, 100],
                                     order: [[0, 'asc']],
                                     pagingType: 'full_numbers',
                                     scrollX: true
                                 });
-                                initializeCharts();
                             }
-
+                            initializeCharts();
                             $('html, body').animate({ scrollTop: $('#activity-results').offset().top - 100 }, 600);
-                        }, 300);
-                    }).fail(() => alert('Search failed. Please try again.'));
+                        }, 200);
+                    })
+                    .fail(() => alert('Search failed. Please try again.'));
                 });
+
+                // Gene Symbol Autocomplete
+                (function() {
+                    let debounceTimer;
+                    let selectedIndex = -1;
+                    let suggestions = [];
+
+                    const geneInput = document.getElementById('gene_symbol');
+                    const geneIdInput = document.getElementById('gene_id');
+                    const suggestionsDiv = document.getElementById('gene-suggestions');
+
+                    if (!geneInput || !suggestionsDiv) return;
+
+                    function searchGenes(query) {
+                        clearTimeout(debounceTimer);
+
+                        if (query.length < 2) {
+                            suggestionsDiv.classList.remove('active');
+                            suggestionsDiv.innerHTML = '';
+                            geneInput.classList.remove('autocomplete-active');
+                            return;
+                        }
+
+                        debounceTimer = setTimeout(() => {
+                            suggestionsDiv.innerHTML = '<div class="autocomplete-loading">Searching...</div>';
+                            suggestionsDiv.classList.add('active');
+                            geneInput.classList.add('autocomplete-active');
+
+                            $.ajax({
+                                url: '/autocomplete_gene',
+                                method: 'GET',
+                                data: { term: query },
+                                success: function(data) {
+                                    suggestions = data;
+                                    displaySuggestions(data);
+                                },
+                                error: function() {
+                                    suggestionsDiv.innerHTML = '<div class="autocomplete-no-results">Error loading suggestions</div>';
+                                }
+                            });
+                        }, 300);
+                    }
+
+                    function displaySuggestions(data) {
+                        if (data.length === 0) {
+                            suggestionsDiv.innerHTML = '<div class="autocomplete-no-results">No genes found</div>';
+                            return;
+                        }
+
+                        let html = '';
+                        data.forEach((item, index) => {
+                            html += `
+                                <div class="autocomplete-suggestion" data-index="${index}" data-value="${item.value}" data-geneid="${item.geneid}">
+                                    <span class="gene-symbol">${item.value}</span>
+                                    <span class="gene-id">${item.geneid}</span>
+                                </div>
+                            `;
+                        });
+
+                        suggestionsDiv.innerHTML = html;
+
+                        document.querySelectorAll('.autocomplete-suggestion').forEach(elem => {
+                            elem.addEventListener('click', function() {
+                                selectSuggestion(this.dataset.value, this.dataset.geneid);
+                            });
+                        });
+                    }
+
+                    function selectSuggestion(symbol, geneid) {
+                        geneInput.value = symbol;
+                        geneIdInput.value = geneid;
+                        suggestionsDiv.classList.remove('active');
+                        suggestionsDiv.innerHTML = '';
+                        geneInput.classList.remove('autocomplete-active');
+                        selectedIndex = -1;
+                        geneInput.dataset.lastSelected = symbol;
+                    }
+
+                    geneInput.addEventListener('input', function() {
+                        searchGenes(this.value);
+                        if (geneIdInput.value && this.value !== this.dataset.lastSelected) {
+                            geneIdInput.value = '';
+                        }
+                    });
+
+                    geneInput.addEventListener('focus', function() {
+                        if (this.value.length >= 2 && suggestions.length > 0) {
+                            suggestionsDiv.classList.add('active');
+                            geneInput.classList.add('autocomplete-active');
+                        }
+                    });
+
+                    geneInput.addEventListener('keydown', function(e) {
+                        const suggestionElems = document.querySelectorAll('.autocomplete-suggestion');
+
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            selectedIndex = Math.min(selectedIndex + 1, suggestionElems.length - 1);
+                            updateSelection(suggestionElems);
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            selectedIndex = Math.max(selectedIndex - 1, -1);
+                            updateSelection(suggestionElems);
+                        } else if (e.key === 'Enter') {
+                            if (selectedIndex >= 0 && suggestionElems[selectedIndex]) {
+                                e.preventDefault();
+                                const selected = suggestionElems[selectedIndex];
+                                selectSuggestion(selected.dataset.value, selected.dataset.geneid);
+                            }
+                        } else if (e.key === 'Escape') {
+                            suggestionsDiv.classList.remove('active');
+                            geneInput.classList.remove('autocomplete-active');
+                            selectedIndex = -1;
+                        }
+                    });
+
+                    function updateSelection(elements) {
+                        elements.forEach((elem, index) => {
+                            if (index === selectedIndex) {
+                                elem.classList.add('selected');
+                                elem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                            } else {
+                                elem.classList.remove('selected');
+                            }
+                        });
+                    }
+
+                    document.addEventListener('click', function(e) {
+                        if (!geneInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                            suggestionsDiv.classList.remove('active');
+                            geneInput.classList.remove('autocomplete-active');
+                            selectedIndex = -1;
+                        }
+                    });
+                })();
 
                 // Info box clicks
                 $('#regionBox').click(function() {
@@ -734,7 +816,7 @@
                 chart.draw(data, options);
             }
 
-            // Draw charts after DataTables init
+            // Initialize charts after DataTables
             function initializeCharts() {
                 setTimeout(() => {
                     if (document.getElementById('condition_pie_chart')) {
