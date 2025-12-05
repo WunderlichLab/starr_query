@@ -22,6 +22,7 @@
                 <a href="https://wunderlichlab.mystrikingly.com/"><img src="{{ url_for('static', filename='images/wunderlich_lab_clear.png') }}" class="logo" alt="Logo"></a>
             </div>
         </div>
+
         <!-- Tabs -->
         <div class="tabs">
 
@@ -35,7 +36,8 @@
         <div id="introduction" class="tab-content active">
             <h2>Drosophila Immune Enhancer Atlas</h2>
 
-            <div>
+            <!-- Citation Box -->
+            <div style="background-color: #f0f8ff; padding: 1.5rem; border-left: 4px solid #5f9ea0; margin-bottom: 2rem; border-radius: 4px;">
                 <h3 style="margin-top: 0;">About This Resource</h3>
                 <p><strong>Citation:</strong> Cohen, L.B., Hadzic, T., Sauer, C., Gibbs, J.R., & Wunderlich, Z. (2025).
                 <em>A genome-wide survey reveals a diverse array of enhancers coordinate the Drosophila innate immune response</em>.
@@ -66,132 +68,140 @@
                 </details>
             </div>
 
+            <!-- Description -->
             <p id="description">
-                This is Wunderlich Lab's web platform for querying and visualizing enhancer–gene associations using STARR-seq datasets
-                from <i>Drosophila melanogaster</i>. The database helps researchers explore how enhancers regulate gene expression across different
-                experimental conditions (Control, 20E hormone treatment, and IMD immune treatment).
+                This platform is the Wunderlich Lab's web resource for querying and visualizing enhancers identified through
+                STARR-seq in <i>Drosophila melanogaster</i> S2* cells. The database enables researchers to explore how enhancer activity
+                across three experimental conditions: Control, 20E hormone treatment, and IMD immune treatment.
             </p>
 
+            <!-- What This Website Does -->
             <h3>What This Website Does</h3>
             <p>
-                The Large-Scale Enhancer Database integrates high-throughput STARR-seq data with
-                gene expression and functional annotations. It allows you to:
+                The Drosophila Immune Enhancer Atlas integrates high-throughput STARR-seq data with gene expression and
+                functional annotation information. There are two types of enhancer data contained within.
+                The first enhancer dataset contains all the enhancers identified in each treatment condition and
+                can be searched by genomic position or by associated genes. The second enhancer data is more processed,
+                and sorts enhancers by whether they are detected in just one, two, or all three conditions, termed "activity classes".
+                The database allows users to:
             </p>
             <ul>
-                <li><strong>Search by Region/Coordinates/Position:</strong>
-                    Find all enhancers with in a specific chromosomal region and their assigned genes</li>
-                <li><strong>Search by gene:</strong>
-                    Discover all enhancers that regulate a particular gene across experimental conditions</li>
-                <li><strong>Search by activity class enhancers: </strong>
-                    Find all enhancers based on activity class coordinates with accessibility, immune function, and temporal gene expression information</li>
-                <li><strong>Apply comprehensive filters:</strong>
-                    Refine results by activity scores, experimental conditions, time clusters, and immune process annotations</li>
-                <li><strong>Export results:</strong>
-                    Download results in CSV, TSV, or Excel formats for further analysis</li>
+                <li>Search for enhancers by genomic position to find all enhancers within a specific region and their assigned genes.</li>
+                <li>Search by gene to discover all enhancers regulating a specific gene across conditions.</li>
+                <li>Search by activity class to find enhancers based on genomic position, accessibility, immune function, or temporal expression patterns.</li>
+                <li>Apply filters, including activity scores, conditions, time clusters, and immune process annotations.</li>
+                <li>Export search results as CSV, TSV, or Excel files for further analysis.</li>
             </ul>
 
+            <!-- How to Use This Database -->
             <h3>How to Use This Database</h3>
 
             <div class="info-boxes">
+                <!-- Search by Proximity Box -->
                 <div class="info-box" id="regionBox">
                     <h4>Search by Proximity</h4>
                     <p>
-                        <strong>Use case:</strong> You have a genomic region and want to find enhancers and their assigned genes<br><br>
+                        Use this option when you have a genomic region and want to identify enhancers and their associated genes.<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
-                        <li>Go to the <strong>"Search by Proximity"</strong> tab</li>
-                        <li>Enter the chromosome (2L, 2R, 3L, 3R, X, Y, or 4), enhancer start and end positions</li>
-                        <li>Alternatively, you can also enter the enhancer name (eg. 2L:100000-120000)</li>
-                        <li>Optionally filter by activity score, condition, time cluster, or immune process</li>
-                        <li>Click "Submit" to see all genes within 15kb of your enhancer region</li>
-                        <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
+                        <li>Open the "Search by Proximity" tab.</li>
+                        <li>Enter the chromosome (2L, 2R, 3L, 3R, X, Y, or 4) and the region start and end positions.</li>
+                        <li>Alternatively, enter an enhancer name (e.g., 2L:100000–120000).</li>
+                        <li>Optionally filter by activity score, condition, time cluster, or immune process.</li>
+                        <li>Click "Submit" to view all enhancers in this region.</li>
+                        <li>Download results as CSV, TSV, or XLSX.</li>
                     </ol>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <img src="{{ url_for('static', filename='images/time_course_graph.png') }}"
+                             alt="Line Graph showing time course graph"
+                             style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; padding: 0.5rem;">
+                        <p style="font-size: 0.85em; color: #666; margin-top: 0.5rem; font-style: italic;">
+                            Time course expression patterns of immune-responsive genes.
+                        </p>
+                    </div>
                 </div>
 
+                <!-- Search by Genes Box -->
                 <div class="info-box" id="geneBox">
                     <h4>Search by Genes</h4>
                     <p>
-                        <strong>Use case:</strong> You have a gene of interest and want to find its assigned enhancers<br><br>
+                        Use this when you have a gene of interest and want to find its assigned enhancers.<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
-                        <li>Go to the <strong>"Search by Genes"</strong> tab</li>
-                        <li>Enter either a gene symbol (e.g., "Abd-B") or FlyBase ID (e.g., "FBgn0000015")</li>
-                        <li>Set an activity score threshold (default: 0)</li>
-                        <li>Optionally filter by condition, time cluster, or immune process</li>
-                        <li>Click "Submit" to find all enhancers regulating your gene</li>
-                        <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
+                        <li>Open the "Search by Genes" tab.</li>
+                        <li>Enter a gene symbol or a FlyBase ID.</li>
+                        <li>Set an activity score threshold (default: 0).</li>
+                        <li>Optionally apply filters such as condition, time cluster, or immune process.</li>
+                        <li>Click "Submit" to view all regulating enhancers.</li>
+                        <li>Download results as CSV, TSV, or XLSX.</li>
                     </ol>
                 </div>
 
+                <!-- Activity Class Search Box -->
                 <div class="info-box" id="activityBox">
                     <h4>Activity Class Search</h4>
                     <p>
-                        <strong>Use case:</strong> You want to find enhancers with specific regulatory properties<br><br>
+                        Use this to find enhancers with specific regulatory properties.<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
-                        <li>Go to the <strong>"Search by Activity Info"</strong> tab</li>
-                        <li>Select desired filters: activity class, accessibility, time cluster, or broad immune role</li>
-                        <li>At least one filter is required</li>
-                        <li>Click "Submit" to find matching enhancers and their target genes</li>
-                        <li>Download results in your preferred format (CSV, TSV, XLSX)</li>
+                        <li>Open the "Search by Activity Info" tab.</li>
+                        <li>Select any of the following filters: activity class, accessibility, time cluster, or broad immune role.</li>
+                        <li>Click "Submit" to view matching enhancers and their target genes.</li>
+                        <li>Download results as CSV, TSV, or XLSX.</li>
                     </ol>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <img src="{{ url_for('static', filename='images/activity_class_venn.png') }}"
+                             alt="Venn Diagram showing enhancer activity class distribution"
+                             style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 8px; padding: 0.5rem;">
+                        <p style="font-size: 0.85em; color: #666; margin-top: 0.5rem; font-style: italic;">
+                            Distribution of enhancers across different activity classes,
+                            including overlaps between enhancers active under multiple experimental conditions.
+                        </p>
+                    </div>
                 </div>
             </div>
 
+            <!-- About the Data -->
             <h3>About the Data</h3>
             <p>The database contains STARR-seq data from S2* cells treated with three different conditions:</p>
             <ul>
-                <li><strong>Control:</strong> Baseline conditions</li>
-                <li><strong>20E:</strong> hormone treatment</li>
-                <li><strong>IMD:</strong> 20E and Heat-killed <i>Serratia marcescens</i></li>
+                <li><strong>Control:</strong> Baseline</li>
+                <li><strong>20E:</strong> Hormone treatment</li>
+                <li><strong>IMD:</strong> 20E and heat-killed <i>Serratia marcescens</i></li>
             </ul>
 
             <p>Each entry includes:</p>
             <ul>
                 <li>Genomic coordinates of enhancer regions</li>
-                <li>Genes found within 5kb upstream and 15 kb downstream of each enhancer</li>
-                <li>Gene expression levels (TPM values) across conditions</li>
-                <li>Enhancer activity scores from STARR-seq assays</li>
-                <li>Accessibility information (based on ATAC-seq in immune induced hemocytes extracted from adult flies)</li>
-                <li>Gene annotations: immune pathway, time cluster classification, and distance to enhancer</li>
-                <li>Transcription factor motifs and binding site counts</li>
+                <li>Genes found within 15kb upstream and 15kb downstream of each enhancer</li>
+                <li>Gene expression levels (transcripts per million (TPM) values) across conditions</li>
+                <li>Enhancer activity scores from STARR-seq</li>
+                <li>Accessibility information based on ATAC-seq from immune-induced hemocytes</li>
+                <li>Gene annotations, including immune pathways, time clusters determined by <i>Schlamp et al. 2021</i>, and distance to enhancers</li>
             </ul>
 
-            <h3>Activity Class Distribution</h3>
-            <div style="text-align: center; margin: 2rem 0;">
-                <img src="{{ url_for('static', filename='images/activity_class_venn.png') }}"
-                     alt="Venn Diagram showing enhancer activity class distribution"
-                     style="max-width: 50%; height: auto; border: 1px solid #ddd; border-radius: 8px; padding: 1rem;">
-                <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;">
-                    Distribution of enhancers across different activity classes. Overlapping regions show enhancers
-                    active in multiple conditions.
-                </p>
-            </div>
-
-            <h3>Tips for Effective Searching</h3>
-            <ul>
-                <li><strong>Sorting:</strong> Click table headers to sort by any column</li>
-                <li><strong>Filtering:</strong> Use the search box in tables to filter by text</li>
-                <li><strong>Activity scores:</strong> Higher scores indicate stronger enhancer activity</li>
-                <li><strong>Combinations:</strong> You can combine multiple filters for more specific queries</li>
-            </ul>
-
+            <!-- Questions or Issues -->
             <h3>Questions or Issues?</h3>
-            <p>For questions about this database or the underlying data, please contact the Wunderlich Lab.<br>
-            Dr. Zeba Wunderlich: zeba@bu.edu
+            <p>
+                For questions about this database or the underlying data, please contact the Wunderlich Lab.<br>
+                Dr. Zeba Wunderlich: <a href="mailto:zeba@bu.edu">zeba@bu.edu</a>
             </p>
 
+            <!-- Acknowledgements -->
             <h3>Acknowledgements</h3>
-            <p>This database was created for, and with data provided by, the Wunderlich Lab. We thank Dr. Zeba Wunderlich and
-            Dr. Lianne Cohen for their support and guidance.</p>
+            <p>
+                This database was created with data provided by the Wunderlich Lab. We thank Dr. Zeba Wunderlich and Dr. Lianne Cohen
+                for their support and guidance.
+            </p>
 
-            <p>This website was originally developed by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course
-            BF768 Biological Database Systems at Boston University, facilitated by Dr. Gary Benson.
-            Following the course, Anushka Dongaonkar continued to expand and maintain the project. </p>
-
+            <p>
+                This website was originally developed by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course
+                <strong>BF768 Biological Database Systems</strong> at Boston University, facilitated by Dr. Gary Benson.<br>
+                Following the course, Anushka Dongaonkar continued to expand and maintain the project.
+            </p>
         </div>
 
 
