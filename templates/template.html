@@ -27,7 +27,7 @@
         <div class="tabs">
 
             <div class="tab active" data-target="#introduction"><b>Introduction</b></div>
-            <div class="tab"        data-target="#region-search"><b>Search by Proximity</b></div>
+            <div class="tab"        data-target="#region-search"><b>Search by Region</b></div>
             <div class="tab"        data-target="#gene-search"><b>Search by Genes</b></div>
             <div class="tab"        data-target="#activity-search"><b>Search by Activity Info</b></div>
         </div>
@@ -40,8 +40,8 @@
             <div style="background-color: #f0f8ff; padding: 1.5rem; border-left: 4px solid #5f9ea0; margin-bottom: 2rem; border-radius: 4px;">
                 <h3 style="margin-top: 0;">About This Resource</h3>
                 <p><strong>Citation:</strong> Cohen, L.B., Hadzic, T., Sauer, C., Gibbs, J.R., & Wunderlich, Z. (2025).
-                <em>A genome-wide survey reveals a diverse array of enhancers coordinate the Drosophila innate immune response</em>.
-                bioRxiv. <a href="https://doi.org/10.1101/2025.09.24.678314" target="_blank">https://doi.org/10.1101/2025.09.24.678314</a></p>
+                    <em>A genome-wide survey reveals a diverse array of enhancers coordinates the Drosophila innate immune response.</em>
+                    bioRxiv.<a href="https://doi.org/10.1101/2025.09.24.678314" target="_blank">https://doi.org/10.1101/2025.09.24.678314</a></p>
 
                 <details style="margin-top: 1rem;">
                     <summary style="cursor: pointer; font-weight: bold; color: #5f9ea0;">Show Abstract</summary>
@@ -70,9 +70,10 @@
 
             <!-- Description -->
             <p id="description">
-                This platform is the Wunderlich Lab's web resource for querying and visualizing enhancers identified through
-                STARR-seq in <i>Drosophila melanogaster</i> S2* cells. The database enables researchers to explore how enhancer activity
-                across three experimental conditions: Control, 20E hormone treatment, and IMD immune treatment.
+                This platform is the Wunderlich Lab’s web resource for querying and visualizing enhancers
+                identified through STARR-seq in <em>Drosophila melanogaster</em> S2* cells. The database enables researchers
+                to explore enhancer activity across three experimental conditions: Control, 20E hormone treatment,
+                and IMD immune treatment.
             </p>
 
             <!-- What This Website Does -->
@@ -97,15 +98,15 @@
             <h3>How to Use This Database</h3>
 
             <div class="info-boxes">
-                <!-- Search by Proximity Box -->
+                <!-- Search by Region Box -->
                 <div class="info-box" id="regionBox">
-                    <h4>Search by Proximity</h4>
+                    <h4>Search by Region</h4>
                     <p>
-                        Use this option when you have a genomic region and want to identify enhancers and their associated genes.<br><br>
+                        Use this option when you have a Genomic Region and want to Identify Enhancers and their Associated Genes.<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
-                        <li>Open the "Search by Proximity" tab.</li>
+                        <li>Open the "Search by Region" tab.</li>
                         <li>Enter the chromosome (2L, 2R, 3L, 3R, X, Y, or 4) and the region start and end positions.</li>
                         <li>Alternatively, enter an enhancer name (e.g., 2L:100000–120000).</li>
                         <li>Optionally filter by activity score, condition, time cluster, or immune process.</li>
@@ -126,7 +127,7 @@
                 <div class="info-box" id="geneBox">
                     <h4>Search by Genes</h4>
                     <p>
-                        Use this when you have a gene of interest and want to find its assigned enhancers.<br><br>
+                        Use this when you have a Gene of Interest and want to Find its Assigned Enhancers.<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
@@ -143,7 +144,7 @@
                 <div class="info-box" id="activityBox">
                     <h4>Activity Class Search</h4>
                     <p>
-                        Use this to find enhancers with specific regulatory properties.<br><br>
+                         Use this to Find Activity Class Enhancers with Specific Regulatory Properties.<br><br>
                         <strong>Steps:</strong>
                     </p>
                     <ol>
@@ -166,7 +167,7 @@
 
             <!-- About the Data -->
             <h3>About the Data</h3>
-            <p>The database contains STARR-seq data from S2* cells treated with three different conditions:</p>
+            <p>The database contains STARR-seq data from S2* cells treated under three conditions:</p>
             <ul>
                 <li><strong>Control:</strong> Baseline</li>
                 <li><strong>20E:</strong> Hormone treatment</li>
@@ -175,13 +176,17 @@
 
             <p>Each entry includes:</p>
             <ul>
-                <li>Genomic coordinates of enhancer regions</li>
-                <li>Genes found within 15kb upstream and 15kb downstream of each enhancer</li>
+                <li>Genomic coordinates of enhancer regions, along with a link the enhancers in the UCSC genome browser</li>
+                <li>Genes found 15 kb upstream and 15 kb downstream of the enhancer</li>
                 <li>Gene expression levels (transcripts per million (TPM) values) across conditions</li>
                 <li>Enhancer activity scores from STARR-seq</li>
                 <li>Accessibility information based on ATAC-seq from immune-induced hemocytes</li>
-                <li>Gene annotations, including immune pathways, time clusters determined by Schlamp et al. 2021, and distance to enhancers</li>
+                <li>Gene annotations, including immune pathways and time clusters identified by Schlamp et al. 2021, as well as distance to enhancers</li>
             </ul>
+
+            <p>Access the full dataset in the NCBI Gene Expression Omnibus under accession number
+                <a target="_blank" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE308695">GSE308695</a>
+            </p>
 
             <!-- Questions or Issues -->
             <h3>Questions or Issues?</h3>
@@ -199,7 +204,7 @@
 
             <p>
                 This website was originally developed by Anushka Dongaonkar, Yuki Ito, Gary Twu, and Jahnavi Kodali as part of the course
-                <strong>BF768 Biological Database Systems</strong> at Boston University, facilitated by Dr. Gary Benson.<br>
+                <strong>BF768 Biological Database Systems</strong> at Boston University, facilitated by Dr. Gary Benson.<br><br>
                 Following the course, Anushka Dongaonkar continued to expand and maintain the project.
             </p>
         </div>
