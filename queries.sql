@@ -171,3 +171,14 @@ SELECT ac.ac_eid            AS enhancer_id,
 SELECT DISTINCT activity_class FROM Activity_class_info WHERE activity_class IS NOT NULL ORDER BY activity_class;
 SELECT DISTINCT accessibility FROM Activity_class_info WHERE accessibility IS NOT NULL ORDER BY accessibility
 SELECT DISTINCT broad_immune_role FROM Activity_class_info WHERE broad_immune_role IS NOT NULL ORDER BY broad_immune_role;
+
+
+
+SELECT ac.ac_eid AS enhancer_id,
+                       ac.enhancer_name  AS enhancer_name,
+                       ac.activity_class AS activity_class,
+                       ac.accessibility  AS accessibility,
+                       ac.geneid         AS gene_id,
+                       ac.gene_symbol    AS gene_symbol
+                FROM Activity_class_info AS ac
+                WHERE 1 = 1 and enhancer_name = '2L:8087363-8088132';

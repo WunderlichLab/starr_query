@@ -13,14 +13,15 @@ load_dotenv()
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def connect_db():
-    connection = mariadb.connect(
+    return mariadb.connect(
         host=os.getenv("DB_HOST"),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASS"),
         database=os.getenv("DB_NAME"),
-        port=int(os.getenv("DB_PORT", 3306))
+        port=int(os.getenv("DB_PORT", 3306)),
+        ssl=True,
+        ssl_ca=os.getenv("DB_CA", "ca.pem"),
     )
-    return connection
 
 
 ## Get filter options:
