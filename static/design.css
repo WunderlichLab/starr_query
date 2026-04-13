@@ -512,3 +512,97 @@ a:hover {
         margin: 0.25rem 0;
     }
 }
+
+/* ========================================
+   VISUALIZATION LAYOUT
+   ======================================== */
+.viz-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.viz-grid.two-up {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.chart-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid #dbe7f3;
+    border-radius: 12px;
+    padding: 1rem 1rem 0.5rem 1rem;
+    box-shadow: 0 4px 14px rgba(44, 90, 160, 0.08);
+}
+
+.chart-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0 2rem 0;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid #dbe7f3;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(44, 90, 160, 0.08);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #5b6b7a;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    color: #1e3f75;
+    font-weight: 700;
+}
+
+/* ========================================
+   TABLE ALIGNMENT
+   ======================================== */
+table,
+th,
+td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* keep merged cells vertically centered */
+#geneTable td[rowspan],
+#geneTable th[rowspan] {
+    vertical-align: middle;
+}
+
+/* ========================================
+   CONSISTENT FORM CONTROL SIZING
+   ======================================== */
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: 44px;
+    height: 44px;
+}
+
+form label {
+    width: 100%;
+}
+
+/* make gene info table centered and tidy */
+#geneInfo td,
+#geneInfo th {
+    text-align: center;
+    vertical-align: middle;
+}
