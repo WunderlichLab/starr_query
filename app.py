@@ -4,7 +4,8 @@ from flask import Flask, render_template, request, jsonify
 import mariadb
 import os
 from dotenv import load_dotenv
-from collections import namedtuple
+from collections import namedtuple, Counter
+import re
 
 app = Flask(__name__)
 
@@ -18,9 +19,7 @@ def connect_db():
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASS"),
         database=os.getenv("DB_NAME"),
-        port=int(os.getenv("DB_PORT", 3306)),
-        ssl=True,
-        ssl_ca=os.getenv("DB_CA", "ca.pem"),
+        port=int(os.getenv("DB_PORT", 3306))
     )
 
 
@@ -91,54 +90,61 @@ def get_filter_options():
         }
 
 ## Tab 1
-def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, activity_score_min=0, exp_condition=None,
+def associations_by_region(chr=None, start=None, end=None, enhancer_name=None,
+                           activity_score_min=0, exp_condition=None,
                            time_cluster=None, immune_process=None):
     try:
         conn = connect_db()
         cursor = conn.cursor()
 
         query = """
-                SELECT e.name           AS enhancer_id,
-                       e.en_length      AS en_length,
-                       a.accessibility  AS accessibility,
-                       e.chromosome     AS chromosome,
-                       e.start          AS estart,
-                       e.end            AS eend,
-                       a.exp_condition  AS exp_condition,
-                       a.activity       AS act_score,
-                       g.symbol         AS gene_symbol,
-                       g.geneid         AS gene_id,
-                       g.tpm_ctrl       AS tpm_ctrl,
-                       g.tpm_20e        AS tpm_20e,
-                       g.tpm_imd        AS tpm_imd,
-                       g.immune_process AS immune_process,
-                       g.time_cluster   AS time_cluster
-                FROM Enhancers e
-                         JOIN Associations a ON e.eid = a.eid
-                         JOIN Genes g ON a.gid = g.gid
-                WHERE a.activity >= %s
-                """
+            SELECT e.name           AS enhancer_id,
+                   e.en_length      AS en_length,
+                   a.accessibility  AS accessibility,
+                   e.chromosome     AS chromosome,
+                   e.start          AS estart,
+                   e.end            AS eend,
+                   a.exp_condition  AS exp_condition,
+                   a.activity       AS act_score,
+                   g.symbol         AS gene_symbol,
+                   g.geneid         AS gene_id,
+                   g.tpm_ctrl       AS tpm_ctrl,
+                   g.tpm_20e        AS tpm_20e,
+                   g.tpm_imd        AS tpm_imd,
+                   g.immune_process AS immune_process,
+                   g.time_cluster   AS time_cluster
+            FROM Enhancers e
+            JOIN Associations a ON e.eid = a.eid
+            JOIN Genes g ON a.gid = g.gid
+            WHERE a.activity >= %s
+        """
 
         params = [activity_score_min]
 
-        # Check if coordinates are provided
-        if chr and start is not None and end is not None:
-            query += """ AND e.chromosome = %s
-              AND e.start >= %s
-              AND e.end <= %s"""
-            params.extend([chr, start, end])
+        # Reuse the same flexible parser as Tab 3
+        parsed_chr, parsed_start, parsed_end = parse_region_input(
+            chr_value=chr,
+            start_value=start,
+            end_value=end,
+            enhancer_name=enhancer_name
+        )
 
-        # Check if enhancer name is provided
+        # If input is a region, use overlap logic
+        if parsed_chr and parsed_start is not None and parsed_end is not None:
+            query += """
+                AND UPPER(e.chromosome) = UPPER(%s)
+                AND NOT (e.end < %s OR e.start > %s)
+            """
+            params.extend([parsed_chr, parsed_start, parsed_end])
+
+        # Otherwise, if text was entered, treat it as exact enhancer name
         elif enhancer_name:
-            [chr,region] = enhancer_name.split(':')
-            [start, end] = region.split('-')
-            query += """ AND e.chromosome = %s
-                          AND e.start >= %s
-                          AND e.end <= %s"""
-            params.extend([chr, start, end])
+            query += " AND LOWER(TRIM(e.name)) = LOWER(TRIM(%s))"
+            params.append(enhancer_name)
 
         else:
-            return []
+            conn.close()
+            return [], {}
 
         if exp_condition:
             query += " AND a.exp_condition = %s"
@@ -157,7 +163,6 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
         cursor.execute(query, params)
         rows = cursor.fetchall()
 
-        # Remove duplicates while preserving order
         seen = set()
         unique_rows = []
         for row in rows:
@@ -167,16 +172,26 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
 
         enhancer_map = {}
 
-        Enhancer = namedtuple('Enhancer', ['enhancer_id', 'en_length', 'chromosome', 'window_start', 'window_end', 'conditions'])
-        Condition = namedtuple('Condition', ['exp_condition', 'activity', 'genes'])
-        Gene = namedtuple('Gene', ['gene_symbol','gene_id', 'accessibility', 'tpm_ctrl', 'tpm_imd', 'tpm_20e', 'immune_process', 'time_cluster'])
+        Enhancer = namedtuple(
+            'Enhancer',
+            ['enhancer_id', 'en_length', 'chromosome', 'window_start', 'window_end', 'conditions']
+        )
+        Condition = namedtuple(
+            'Condition',
+            ['exp_condition', 'activity', 'genes']
+        )
+        Gene = namedtuple(
+            'Gene',
+            ['gene_symbol', 'gene_id', 'accessibility', 'tpm_ctrl', 'tpm_imd', 'tpm_20e', 'immune_process', 'time_cluster']
+        )
 
         for row in unique_rows:
-            (enhancer_id, en_length, accessibility,
-             chrom, estart, eend,
-             exp_condition, act_score, gene_symbol, gene_id,
-             tpm_ctrl, tpm_imd, tpm_20e, immune_process, time_cluster
-             ) = row
+            (
+                enhancer_id, en_length, accessibility,
+                chrom, estart, eend,
+                exp_condition_val, act_score, gene_symbol, gene_id,
+                tpm_ctrl, tpm_20e, tpm_imd, immune_process_val, time_cluster_val
+            ) = row
 
             window_start = max(0, estart - 5000)
             window_end = eend + 5000
@@ -191,9 +206,9 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
                     'conditions': {}
                 }
 
-            if exp_condition not in enhancer_map[enhancer_id]['conditions']:
-                enhancer_map[enhancer_id]['conditions'][exp_condition] = {
-                    'exp_condition': exp_condition,
+            if exp_condition_val not in enhancer_map[enhancer_id]['conditions']:
+                enhancer_map[enhancer_id]['conditions'][exp_condition_val] = {
+                    'exp_condition': exp_condition_val,
                     'activity': act_score,
                     'genes': []
                 }
@@ -205,12 +220,12 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
                 tpm_ctrl=tpm_ctrl,
                 tpm_imd=tpm_imd,
                 tpm_20e=tpm_20e,
-                immune_process=immune_process,
-                time_cluster=time_cluster
+                immune_process=immune_process_val,
+                time_cluster=time_cluster_val
             )
 
-            if gene_obj not in enhancer_map[enhancer_id]['conditions'][exp_condition]['genes']:
-                enhancer_map[enhancer_id]['conditions'][exp_condition]['genes'].append(gene_obj)
+            if gene_obj not in enhancer_map[enhancer_id]['conditions'][exp_condition_val]['genes']:
+                enhancer_map[enhancer_id]['conditions'][exp_condition_val]['genes'].append(gene_obj)
 
         enhancers_details = []
         for enhancer_id in sorted(enhancer_map.keys()):
@@ -230,20 +245,24 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None, a
                 enhancer_id=enhancer_info['enhancer_id'],
                 en_length=enhancer_info['en_length'],
                 chromosome=enhancer_info['chromosome'],
-                window_start = enhancer_info['window_start'],
-                window_end = enhancer_info['window_end'],
+                window_start=enhancer_info['window_start'],
+                window_end=enhancer_info['window_end'],
                 conditions=conditions_list
             )
             enhancers_details.append(e_tup)
 
+        condition_counts = Counter()
+        for enhancer in enhancers_details:
+            for condition in enhancer.conditions:
+                if condition.exp_condition:
+                    condition_counts[condition.exp_condition] += 1
+
         conn.close()
-        return enhancers_details
+        return enhancers_details, dict(condition_counts)
 
     except mariadb.Error as e:
         print(f"Database error: {e}")
-        return []
-
-
+        return [], {}
 
 ## Tab 2
 def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_condition=None,
@@ -312,6 +331,42 @@ def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_con
 
 
 ## Tab 3
+def parse_region_input(chr_value=None, start_value=None, end_value=None, enhancer_name=None):
+    """
+    Accepts any of these formats:
+      2L:3452301-3452810
+      2L 3452301 3452810
+      2L 3452301-3452810
+
+    Returns:
+      (chromosome, start, end) or (None, None, None)
+    """
+    # Case 1: separate fields were provided
+    if chr_value and start_value is not None and end_value is not None:
+        try:
+            return str(chr_value).strip().upper(), int(start_value), int(end_value)
+        except (TypeError, ValueError):
+            return None, None, None
+
+    # Case 2: one enhancer/region text box was provided
+    if enhancer_name:
+        text = str(enhancer_name).strip().upper()
+
+        # Normalize separators:
+        # 2L:3452301-3452810 -> 2L 3452301 3452810
+        # 2L 3452301-3452810 -> 2L 3452301 3452810
+        normalized = re.sub(r'[:\-]+', ' ', text)
+        parts = normalized.split()
+
+        if len(parts) == 3:
+            chrom, start, end = parts
+            try:
+                return chrom, int(start), int(end)
+            except ValueError:
+                return None, None, None
+
+    return None, None, None
+
 def search_by_activity_class(chr=None, start=None, end=None, enhancer_name=None,
                              activity_class=None, accessibility=None):
     """Search enhancers by genomic region and/or activity class and accessibility"""
@@ -332,49 +387,60 @@ def search_by_activity_class(chr=None, start=None, end=None, enhancer_name=None,
 
         params = []
 
-        # Check if coordinates are provided
-        if chr and start is not None and end is not None:
-            # Parse chromosome and coordinates from enhancer_name to match
-            query += """ AND ac.enhancer_name LIKE %s"""
-            region_pattern = f"{chr}:%"
-            params.append(region_pattern)
+        parsed_chr, parsed_start, parsed_end = parse_region_input(
+            chr_value=chr,
+            start_value=start,
+            end_value=end,
+            enhancer_name=enhancer_name
+        )
 
-        # Check if enhancer name is provided
+        # Region search
+        if parsed_chr and parsed_start is not None and parsed_end is not None:
+            # First filter by chromosome only in SQL, case-insensitive
+            query += " AND UPPER(ac.enhancer_name) LIKE %s"
+            params.append(f"{parsed_chr}:%")
+
+        # If user entered text but not a valid region, fall back to exact enhancer-name match
         elif enhancer_name:
-            query += """ AND ac.enhancer_name = %s"""
+            query += " AND LOWER(TRIM(ac.enhancer_name)) = LOWER(TRIM(%s))"
             params.append(enhancer_name)
 
         if activity_class:
-            query += " AND activity_class = %s"
+            query += " AND ac.activity_class = %s"
             params.append(activity_class)
 
         if accessibility:
-            query += " AND accessibility = %s"
+            query += " AND ac.accessibility = %s"
             params.append(accessibility)
 
-        query += " ORDER BY enhancer_name, gene_id"
+        query += " ORDER BY ac.enhancer_name, ac.geneid"
 
         cursor.execute(query, params)
         rows = cursor.fetchall()
 
-        # If coordinates were provided, filter by coordinate range
-        if chr and start is not None and end is not None:
+        # Apply coordinate filtering in Python
+        if parsed_chr and parsed_start is not None and parsed_end is not None:
             filtered_rows = []
             for row in rows:
-                enhancer_name = row[1]  # enhancer_name is at index 1
-                if enhancer_name and ':' in enhancer_name:
+                enhancer_name_val = row[1]  # enhancer_name
+
+                if enhancer_name_val and ':' in enhancer_name_val:
                     try:
-                        parts = enhancer_name.split(':')
-                        if len(parts) == 2:
-                            coords = parts[1].split('-')
-                            if len(coords) == 2:
-                                enh_start = int(coords[0])
-                                enh_end = int(coords[1])
-                                # Check if enhancer overlaps with the query region
-                                if not (enh_end < start or enh_start > end):
-                                    filtered_rows.append(row)
+                        chrom_part, coord_part = enhancer_name_val.strip().upper().split(':', 1)
+                        enh_start_str, enh_end_str = coord_part.split('-', 1)
+
+                        enh_start = int(enh_start_str)
+                        enh_end = int(enh_end_str)
+
+                        # Requirement:
+                        # enhancer_start >= query_start
+                        # enhancer_end <= query_end
+                        if chrom_part == parsed_chr and enh_start >= parsed_start and enh_end <= parsed_end:
+                            filtered_rows.append(row)
+
                     except (ValueError, IndexError):
                         continue
+
             rows = filtered_rows
 
         # Remove duplicates while preserving order
@@ -385,21 +451,18 @@ def search_by_activity_class(chr=None, start=None, end=None, enhancer_name=None,
                 seen.add(row)
                 unique_rows.append(row)
 
-        # Convert to dictionaries for template access
         columns = ['enhancer_id', 'enhancer_name', 'activity_class', 'accessibility',
                    'gene_id', 'gene_symbol']
 
         result_dicts = [dict(zip(columns, row)) for row in unique_rows]
 
         conn.close()
-
         return result_dicts
 
     except mariadb.Error as e:
         print(f"Database error: {e}")
         return []
-
-
+    
 
 ## Tab 0
 @app.route('/')
@@ -410,7 +473,6 @@ def index():
 ## Tab 1
 @app.route('/submit_region', methods=['POST'])
 def find_gene():
-    # Get form data
     chr = request.form.get('chr', '').strip() or None
     start_str = request.form.get('start', '').strip()
     end_str = request.form.get('end', '').strip()
@@ -420,27 +482,36 @@ def find_gene():
     time_cluster = request.form.get("time_cluster", "").strip() or None
     immune_process = request.form.get("immune_process", "").strip() or None
 
-    # Convert start/end to integers if provided
     start = int(start_str) if start_str else None
     end = int(end_str) if end_str else None
 
-    # Validate input: either coordinates OR enhancer name
     has_coordinates = chr and start is not None and end is not None
     has_enhancer_name = enhancer_name is not None
 
-    if not (has_coordinates or has_enhancer_name):
-        filter_options = get_filter_options()
-        return render_template('tab_1.html',
-                             enhancers=[],
-                             filter_options=filter_options,
-                             error_message="Please provide either coordinates (chromosome, start, end) OR an enhancer name.")
-
-    enhancers = associations_by_region(chr, start, end, enhancer_name, activity_score_min,
-                                       exp_condition, time_cluster, immune_process)
-
     filter_options = get_filter_options()
 
-    return render_template('tab_1.html', enhancers=enhancers, filter_options=filter_options)
+    if not (has_coordinates or has_enhancer_name):
+        return render_template(
+            'tab_1.html',
+            enhancers=[],
+            condition_counts={},
+            filter_options=filter_options,
+            error_message="Please provide either coordinates (chromosome, start, end) OR an enhancer name."
+        )
+
+    enhancers, condition_counts = associations_by_region(
+        chr, start, end, enhancer_name,
+        activity_score_min, exp_condition,
+        time_cluster, immune_process
+    )
+
+    return render_template(
+        'tab_1.html',
+        enhancers=enhancers,
+        condition_counts=condition_counts,
+        filter_options=filter_options
+    )
+
 
 ## Tab 2
 @app.route('/submit_gene', methods=['POST'])
@@ -572,9 +643,17 @@ def autocomplete_gene():
         return jsonify([])
 
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run()
 
 
 
+# TODO:  Fix “Search by Activity Info” tab - Searching by enhancer name not working - DONE
+
+# TODO: Fix “Enhancers by Experimental Condition” graph.
+# Graph not rendering - Debug why values show as “undefined” - DONE
+
+# TODO: Confirm correct data mapping for chart -DONE
+
+# TODO: centre aligned text in tables - DONE
+
+# TODO: Come up with test cases for each search function and expected output - WORK IN PROGRESS

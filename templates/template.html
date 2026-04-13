@@ -484,40 +484,25 @@
                 });
 
                 // Tab 1: Enhancer Search
-                $('#enhancer-form').submit(function(e){
-                    e.preventDefault();
-                    $.post(this.action, $(this).serialize())
-                    .done(html => {
-                        $('#enhancer-results').html(html);
+$('#enhancer-form').submit(function(e){
+    e.preventDefault();
+    $.post(this.action, $(this).serialize())
+    .done(html => {
+        $('#enhancer-results').html(html);
 
-                        if ($.fn.DataTable.isDataTable('#geneTable')) {
-                            $('#geneTable').DataTable().destroy();
-                        }
+        // No DataTables for Tab 1 because rowspan + pagination is unstable
 
-                        setTimeout(() => {
-                            if ($('#geneTable').length) {
-                                $('#geneTable').DataTable({
-                                    pageLength: 15,
-                                    lengthMenu: [10, 15, 25, 50, 100],
-                                    ordering: false,
-                                    paging: true,
-                                    searching: true,
-                                    info: true,
-                                    pagingType: 'full_numbers',
-                                    scrollX: true,
-                                    autoWidth: false
-                                });
-                            }
-                            initializeCharts();
-                            $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
-                        }, 200);
-                    })
-                    .fail(function(xhr, status, error) {
-                        console.error('Form submission failed:', error);
-                        alert('Search failed. Please try again.');
-                    });
-                });
+        initializeCharts();
 
+        if ($('#enhancer-results').length) {
+            $('html, body').animate({ scrollTop: $('#enhancer-results').offset().top - 100 }, 600);
+        }
+    })
+    .fail(function(xhr, status, error) {
+        console.error('Form submission failed:', error);
+        alert('Search failed. Please try again.');
+    });
+});
                 // Tab 2: Gene Search
                 $('#gene-form').submit(function(e){
                     e.preventDefault();
@@ -724,126 +709,256 @@
             });
 
             // Load Google Charts
-            google.charts.load('current', {'packages':['corechart']});
+    google.charts.load('current', {'packages':['corechart']});
 
-            // Tab 1: Condition Pie Chart
-            function drawConditionPieChart() {
-                const chartDataEl = document.getElementById('chart-data');
-                if (!chartDataEl) return;
+    function safeParseJson(scriptId) {
+        const el = document.getElementById(scriptId);
+        if (!el) return null;
+        try {
+            return JSON.parse(el.textContent);
+        } catch (e) {
+            console.error(`Failed to parse JSON from ${scriptId}:`, e);
+            return null;
+        }
+    }
 
-                const chartData = JSON.parse(chartDataEl.textContent);
-                if (!chartData || !chartData.conditions) return;
-
-                const conditionCounts = {};
-                chartData.conditions.forEach(conditionList => {
-                    conditionList.forEach(cond => {
-                        const condition = cond.exp_condition;
-                        conditionCounts[condition] = (conditionCounts[condition] || 0) + 1;
-                    });
-                });
-
-                const data = google.visualization.arrayToDataTable([
-                    ['Condition', 'Count'],
-                    ...Object.entries(conditionCounts)
-                ]);
-
-                const options = {
-                    title: 'Enhancers by Experimental Condition',
-                    pieHole: 0.4,
-                    colors: ['#5f9ea0', '#4a7c7e', '#6fa8aa'],
-                    backgroundColor: { fill: '#f8fafb' }
-                };
-
-                const chart = new google.visualization.PieChart(document.getElementById('condition_pie_chart'));
-                chart.draw(data, options);
+    function buildCategoryCounts(items, includeUnknown = false) {
+        const counts = {};
+        (items || []).forEach(item => {
+            const value = (item === null || item === undefined || item === '') ? null : String(item).trim();
+            const key = value || (includeUnknown ? 'Unknown' : null);
+            if (key) {
+                counts[key] = (counts[key] || 0) + 1;
             }
+        });
+        return counts;
+    }
 
-            // Tab 2: Activity Score Histogram
-            function drawActivityHistogram() {
-                const histDataEl = document.getElementById('histogram-data');
-                if (!histDataEl) return;
+    function drawDonutChart(containerId, counts, title, colors) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
 
-                const histData = JSON.parse(histDataEl.textContent);
-                if (!histData || !histData.scores) return;
+        const rows = [['Category', 'Count']];
+        Object.entries(counts).forEach(([label, count]) => {
+            if (count > 0) rows.push([label, count]);
+        });
 
-                const dataArray = [['Score', 'Frequency']];
-                histData.scores.forEach(score => {
-                    if (score) dataArray.push([parseFloat(score), 1]);
-                });
+        if (rows.length === 1) {
+            container.innerHTML = '<p>No chart data available.</p>';
+            return;
+        }
 
-                const data = google.visualization.arrayToDataTable(dataArray);
+        const data = google.visualization.arrayToDataTable(rows);
+        const options = {
+            title: title,
+            pieHole: 0.45,
+            legend: { position: 'right', textStyle: { fontSize: 12 } },
+            chartArea: { width: '88%', height: '78%' },
+            backgroundColor: { fill: 'transparent' },
+            colors: colors
+        };
 
-                const options = {
-                    title: 'Distribution of Enhancer Activity Scores',
-                    legend: { position: 'none' },
-                    histogram: { bucketSize: 50 },
-                    hAxis: { title: 'Activity Score' },
-                    vAxis: { title: 'Frequency' },
-                    colors: ['#5f9ea0'],
-                    backgroundColor: { fill: '#f8fafb' }
-                };
+        const chart = new google.visualization.PieChart(container);
+        chart.draw(data, options);
+    }
 
-                const chart = new google.visualization.Histogram(document.getElementById('activity_histogram'));
-                chart.draw(data, options);
+    function drawHistogramChart(containerId, values, title, color, bucketSize = null) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const rows = [['Value']];
+        (values || []).forEach(v => {
+            const num = Number(v);
+            if (v !== null && v !== undefined && v !== '' && !Number.isNaN(num)) {
+                rows.push([num]);
             }
+        });
 
-            // Tab 3: Flexible Chart
-            function updateTab3Chart() {
-                const tab3DataEl = document.getElementById('tab3-data');
-                if (!tab3DataEl) return;
+        if (rows.length === 1) {
+            container.innerHTML = '<p>No histogram data available.</p>';
+            return;
+        }
 
-                const tableData = JSON.parse(tab3DataEl.textContent);
-                const chartType = document.getElementById('chart_type').value;
-                const xAxis = document.getElementById('x_axis').value;
+        const data = google.visualization.arrayToDataTable(rows);
+        const options = {
+            title: title,
+            legend: { position: 'none' },
+            histogram: bucketSize ? { bucketSize: bucketSize } : {},
+            hAxis: { title: title.includes('Length') ? 'Enhancer Length' : 'Activity Score' },
+            vAxis: { title: 'Frequency' },
+            backgroundColor: { fill: 'transparent' },
+            colors: [color]
+        };
 
-                const counts = {};
-                tableData.forEach(row => {
-                    const key = row[xAxis] || 'Unknown';
-                    counts[key] = (counts[key] || 0) + 1;
-                });
+        const chart = new google.visualization.Histogram(container);
+        chart.draw(data, options);
+    }
 
-                const data = google.visualization.arrayToDataTable([
-                    [xAxis.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 'Count'],
-                    ...Object.entries(counts)
-                ]);
+    // Tab 1
+    function drawConditionPieChart() {
+        const data = safeParseJson('tab1-viz-data');
+        if (!data) return;
 
-                let chart, options;
-                if (chartType === 'bar') {
-                    options = {
-                        title: `Distribution by ${xAxis.replace(/_/g, ' ')}`,
-                        legend: { position: 'none' },
-                        hAxis: { title: xAxis.replace(/_/g, ' ') },
-                        vAxis: { title: 'Count' },
-                        colors: ['#5f9ea0'],
-                        backgroundColor: { fill: '#f8fafb' }
-                    };
-                    chart = new google.visualization.ColumnChart(document.getElementById('tab3_chart'));
-                } else {
-                    options = {
-                        title: `Distribution by ${xAxis.replace(/_/g, ' ')}`,
-                        pieHole: 0.4,
-                        backgroundColor: { fill: '#f8fafb' }
-                    };
-                    chart = new google.visualization.PieChart(document.getElementById('tab3_chart'));
-                }
+        drawDonutChart(
+            'condition_pie_chart',
+            data.condition_counts || {},
+            'Enhancers by Experimental Condition',
+            ['#4F46E5', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6']
+        );
+    }
 
-                chart.draw(data, options);
+    function drawTab1LengthHistogram() {
+        const data = safeParseJson('tab1-viz-data');
+        if (!data) return;
+
+        drawHistogramChart(
+            'tab1_length_histogram',
+            data.lengths || [],
+            'Enhancer Length Distribution',
+            '#06B6D4',
+            100
+        );
+    }
+
+    // Tab 2
+    function drawActivityHistogram() {
+        const data = safeParseJson('tab2-viz-data');
+        if (!data) return;
+
+        drawHistogramChart(
+            'activity_histogram',
+            data.scores || [],
+            'Distribution of Enhancer Activity Scores',
+            '#14B8A6',
+            50
+        );
+    }
+
+    function drawTab2ConditionChart() {
+        const data = safeParseJson('tab2-viz-data');
+        if (!data) return;
+
+        const counts = buildCategoryCounts(data.conditions, false);
+        drawDonutChart(
+            'tab2_condition_chart',
+            counts,
+            'Enhancers by Experimental Condition',
+            ['#4F46E5', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6']
+        );
+    }
+
+    function drawTab2AccessibilityChart() {
+        const data = safeParseJson('tab2-viz-data');
+        if (!data) return;
+
+        const counts = buildCategoryCounts(data.accessibilities, true);
+        drawDonutChart(
+            'tab2_accessibility_chart',
+            counts,
+            'Enhancers by Accessibility',
+            ['#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1']
+        );
+    }
+
+    function populateTab2Stats() {
+        const data = safeParseJson('tab2-viz-data');
+        if (!data) return;
+
+        const scores = (data.scores || [])
+            .map(v => Number(v))
+            .filter(v => !Number.isNaN(v));
+
+        if (!scores.length) return;
+
+        const sorted = [...scores].sort((a, b) => a - b);
+        const total = scores.length;
+        const mean = scores.reduce((a, b) => a + b, 0) / total;
+        const median = total % 2
+            ? sorted[Math.floor(total / 2)]
+            : (sorted[total / 2 - 1] + sorted[total / 2]) / 2;
+        const max = Math.max(...scores);
+
+        document.getElementById('tab2_total_enhancers').textContent = total;
+        document.getElementById('tab2_mean_activity').textContent = mean.toFixed(2);
+        document.getElementById('tab2_median_activity').textContent = median.toFixed(2);
+        document.getElementById('tab2_max_activity').textContent = max.toFixed(2);
+    }
+
+    // Tab 3
+    function updateTab3Chart() {
+        const tab3DataEl = document.getElementById('tab3-data');
+        if (!tab3DataEl) return;
+
+        const tableData = JSON.parse(tab3DataEl.textContent);
+        const chartType = document.getElementById('chart_type').value;
+        const xAxis = document.getElementById('x_axis').value;
+
+        const counts = {};
+        tableData.forEach(row => {
+            const key = row[xAxis] || 'Unknown';
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        const data = google.visualization.arrayToDataTable([
+            [xAxis.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 'Count'],
+            ...Object.entries(counts)
+        ]);
+
+        let chart, options;
+        if (chartType === 'bar') {
+            options = {
+                title: `Distribution by ${xAxis.replace(/_/g, ' ')}`,
+                legend: { position: 'none' },
+                hAxis: { title: xAxis.replace(/_/g, ' ') },
+                vAxis: { title: 'Count' },
+                colors: ['#5f9ea0'],
+                backgroundColor: { fill: '#f8fafb' }
+            };
+            chart = new google.visualization.ColumnChart(document.getElementById('tab3_chart'));
+        } else {
+            options = {
+                title: `Distribution by ${xAxis.replace(/_/g, ' ')}`,
+                pieHole: 0.4,
+                backgroundColor: { fill: '#f8fafb' },
+                colors: ['#7C3AED', '#EC4899', '#06B6D4', '#84CC16', '#F59E0B', '#EF4444']
+            };
+            chart = new google.visualization.PieChart(document.getElementById('tab3_chart'));
+        }
+
+        chart.draw(data, options);
+    }
+
+    function initializeCharts() {
+        const drawWhenReady = (fn) => {
+            if (window.google && google.visualization) {
+                fn();
+            } else {
+                google.charts.setOnLoadCallback(fn);
             }
+        };
 
-            // Initialize charts after DataTables
-            function initializeCharts() {
-                setTimeout(() => {
-                    if (document.getElementById('condition_pie_chart')) {
-                        google.charts.setOnLoadCallback(drawConditionPieChart);
-                    }
-                    if (document.getElementById('activity_histogram')) {
-                        google.charts.setOnLoadCallback(drawActivityHistogram);
-                    }
-                    if (document.getElementById('tab3_chart')) {
-                        google.charts.setOnLoadCallback(updateTab3Chart);
-                    }
-                }, 500);
-            }
+        if (document.getElementById('condition_pie_chart')) {
+            drawWhenReady(drawConditionPieChart);
+        }
+        if (document.getElementById('tab1_length_histogram')) {
+            drawWhenReady(drawTab1LengthHistogram);
+        }
+        if (document.getElementById('activity_histogram')) {
+            drawWhenReady(drawActivityHistogram);
+        }
+        if (document.getElementById('tab2_condition_chart')) {
+            drawWhenReady(drawTab2ConditionChart);
+        }
+        if (document.getElementById('tab2_accessibility_chart')) {
+            drawWhenReady(drawTab2AccessibilityChart);
+        }
+        if (document.getElementById('tab2_total_enhancers')) {
+            populateTab2Stats();
+        }
+        if (document.getElementById('tab3_chart')) {
+            drawWhenReady(updateTab3Chart);
+        }
+    }
         </script>
     </body>
 </html>

@@ -90,16 +90,50 @@
         </tbody>
     </table>
 
-    <!-- Visualization Section -->
-    <div class="chart-container">
-        <h4>Activity Score Distribution</h4>
-        <div id="activity_histogram" style="width: 100%; height: 500px;"></div>
+    <!-- Summary Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Enhancers</div>
+            <div class="stat-value" id="tab2_total_enhancers">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Mean Activity</div>
+            <div class="stat-value" id="tab2_mean_activity">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Median Activity</div>
+            <div class="stat-value" id="tab2_median_activity">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Max Activity</div>
+            <div class="stat-value" id="tab2_max_activity">-</div>
+        </div>
     </div>
 
-    <!-- Store data -->
-    <script id="histogram-data" type="application/json">
+    <!-- Visualization Section -->
+    <div class="viz-grid two-up">
+        <div class="chart-card">
+            <h4>Enhancers by Experimental Condition</h4>
+            <div id="tab2_condition_chart" style="width: 100%; height: 420px;"></div>
+        </div>
+
+        <div class="chart-card">
+            <h4>Enhancers by Accessibility</h4>
+            <div id="tab2_accessibility_chart" style="width: 100%; height: 420px;"></div>
+        </div>
+
+        <div class="chart-card full-width">
+            <h4>Activity Score Distribution</h4>
+            <div id="activity_histogram" style="width: 100%; height: 420px;"></div>
+        </div>
+    </div>
+
+    <!-- Store visualization data -->
+    <script id="tab2-viz-data" type="application/json">
     {
-        "scores": {{ enhancers | map(attribute='act_score') | list | tojson }}
+        "scores": {{ enhancers | map(attribute='act_score') | list | tojson }},
+        "conditions": {{ enhancers | map(attribute='exp_condition') | list | tojson }},
+        "accessibilities": {{ enhancers | map(attribute='accessibility') | list | tojson }}
     }
     </script>
 

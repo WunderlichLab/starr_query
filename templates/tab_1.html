@@ -17,7 +17,7 @@
         <button onclick="downloadExcel()" class="download-btn">Download Excel</button>
     </div>
 
-    <!-- Display Table -->
+    <!-- Display Table with merged rows -->
     <table id="geneTable" class="display" style="width: 100%;">
         <thead>
         <tr>
@@ -52,15 +52,17 @@
                             </td>
                             <td rowspan="{{ total_genes }}">{{ e.en_length }}</td>
                         {% endif %}
+
                         {% if loop.first %}
                             <td rowspan="{{ c.genes|length }}">{{ c.exp_condition or '-' }}</td>
-                            <td rowspan="{{ c.genes|length }}">{{ c.activity if c.activity else '-' }}</td>
-                            <td rowspan="{{ c.genes|length }}">{{ g.accessibility or '-'}}</td>
+                            <td rowspan="{{ c.genes|length }}">{{ c.activity if c.activity is not none else '-' }}</td>
+                            <td rowspan="{{ c.genes|length }}">{{ g.accessibility or '-' }}</td>
                         {% endif %}
-                        <td>{{ g.gene_symbol or g.gene_id or '-'}}</td>
-                        <td>{{ '%.2f'|format(g.tpm_ctrl) if g.tpm_ctrl else '-'}}</td>
-                        <td>{{ '%.2f'|format(g.tpm_20e) if g.tpm_20e else '-' }}</td>
-                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd else '-' }}</td>
+
+                        <td>{{ g.gene_symbol or g.gene_id or '-' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_ctrl) if g.tpm_ctrl is not none else '-' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_20e) if g.tpm_20e is not none else '-' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd is not none else '-' }}</td>
                         <td>{{ g.immune_process or '-' }}</td>
                         <td>{{ g.time_cluster or '-' }}</td>
                     </tr>
@@ -102,13 +104,13 @@
                         <td>{{ e.window_start }}</td>
                         <td>{{ e.window_end }}</td>
                         <td>{{ c.exp_condition or '' }}</td>
-                        <td>{{ c.activity if c.activity else '' }}</td>
-                        <td>{{ g.accessibility or ''}}</td>
-                        <td>{{ g.gene_symbol or ''}}</td>
-                        <td>{{ g.gene_id or ''}}</td>
-                        <td>{{ '%.2f'|format(g.tpm_ctrl) if g.tpm_ctrl else ''}}</td>
-                        <td>{{ '%.2f'|format(g.tpm_20e) if g.tpm_20e else '' }}</td>
-                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd else '' }}</td>
+                        <td>{{ c.activity if c.activity is not none else '' }}</td>
+                        <td>{{ g.accessibility or '' }}</td>
+                        <td>{{ g.gene_symbol or '' }}</td>
+                        <td>{{ g.gene_id or '' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_ctrl) if g.tpm_ctrl is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_20e) if g.tpm_20e is not none else '' }}</td>
+                        <td>{{ '%.2f'|format(g.tpm_imd) if g.tpm_imd is not none else '' }}</td>
                         <td>{{ g.immune_process or '' }}</td>
                         <td>{{ g.time_cluster or '' }}</td>
                     </tr>
@@ -119,15 +121,39 @@
     </table>
 
     <!-- Visualization Section -->
-    <div class="chart-container">
-        <h4>Enhancers by Experimental Condition</h4>
-        <div id="condition_pie_chart" style="width: 100%; height: 500px;"></div>
+    <div class="viz-grid two-up">
+        <div class="chart-card">
+            <h4>Enhancers by Experimental Condition</h4>
+            <div id="condition_pie_chart" style="width: 100%; height: 420px;"></div>
+        </div>
+
+        <div class="chart-card">
+            <h4>Enhancer Length Distribution</h4>
+            <div id="tab1_length_histogram" style="width: 100%; height: 420px;"></div>
+        </div>
     </div>
 
-    <!-- Store chart data -->
-    <script id="chart-data" type="application/json">
+    <!-- Store visualization data -->
+    <script id="tab1-viz-data" type="application/json">
     {
-        "conditions": {{ enhancers | map(attribute='conditions') | list | tojson }}
+        "condition_counts": {
+            {% set ns = namespace(control=0, e20=0, imd=0) %}
+            {% for e in enhancers %}
+                {% for c in e.conditions %}
+                    {% if c.exp_condition == 'Control' %}
+                        {% set ns.control = ns.control + 1 %}
+                    {% elif c.exp_condition == '20E' %}
+                        {% set ns.e20 = ns.e20 + 1 %}
+                    {% elif c.exp_condition == 'IMD' %}
+                        {% set ns.imd = ns.imd + 1 %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            "Control": {{ ns.control }},
+            "20E": {{ ns.e20 }},
+            "IMD": {{ ns.imd }}
+        },
+        "lengths": {{ enhancers | map(attribute='en_length') | list | tojson }}
     }
     </script>
 
