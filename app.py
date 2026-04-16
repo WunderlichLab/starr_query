@@ -14,21 +14,13 @@ load_dotenv()
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def connect_db():
-    db_config = {
-        "host": os.getenv("DB_HOST"),
-        "user": os.getenv("DB_USER"),
-        "password": os.getenv("DB_PASS"),
-        "database": os.getenv("DB_NAME"),
-        "port": int(os.getenv("DB_PORT", 3306))
-    }
-
-    ssl_ca = os.getenv("DB_CA")
-
-    # Only use SSL if explicitly provided
-    if ssl_ca:
-        db_config["ssl_ca"] = ssl_ca
-
-    return mariadb.connect(**db_config)
+    return mariadb.connect(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASS"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT", 3306))
+    )
 
 ## Get filter options:
 def get_filter_options():
