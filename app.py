@@ -19,9 +19,10 @@ def connect_db():
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASS"),
         database=os.getenv("DB_NAME"),
-        port=int(os.getenv("DB_PORT", 3306))
+        port=int(os.getenv("DB_PORT", 3306)),
+        ssl=True,
+        ssl_verify_cert=False
     )
-
 
 ## Get filter options:
 def get_filter_options():
@@ -643,17 +644,6 @@ def autocomplete_gene():
         return jsonify([])
 
 if __name__ == "__main__":
-    app.run()
-
-
-
-# TODO:  Fix “Search by Activity Info” tab - Searching by enhancer name not working - DONE
-
-# TODO: Fix “Enhancers by Experimental Condition” graph.
-# Graph not rendering - Debug why values show as “undefined” - DONE
-
-# TODO: Confirm correct data mapping for chart -DONE
-
-# TODO: centre aligned text in tables - DONE
-
-# TODO: Come up with test cases for each search function and expected output - WORK IN PROGRESS
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
