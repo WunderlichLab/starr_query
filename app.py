@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from flask import Flask, render_template, request, jsonify
-import pymysql
+import mariadb
 import os
 from dotenv import load_dotenv
 from collections import namedtuple, Counter
@@ -14,16 +14,16 @@ load_dotenv()
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def connect_db():
-    db_config = {
-        "host": os.getenv("DB_HOST"),
-        "user": os.getenv("DB_USER"),
-        "password": os.getenv("DB_PASS"),
-        "database": os.getenv("DB_NAME"),
-        "port": int(os.getenv("DB_PORT", 3306)),
-        "cursorclass": pymysql.cursors.Cursor
-    }
+    return mariadb.connect(
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASS"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT", 3306)),
+        ssl=True,
+        ssl_verify_cert=False
+    )
 
-    return pymysql.connect(**db_config)
 ## Get filter options:
 def get_filter_options():
     """Fetch unique activity classes, conditions, time clusters, immune processes and broad immune roles from database"""
@@ -78,7 +78,7 @@ def get_filter_options():
 
         return filters
 
-    except pymysql.MySQLError as e:
+    except mariadb.Error as e:
         print(f"Error fetching filter options: {e}")
         return {
             'conditions': [],
@@ -261,7 +261,7 @@ def associations_by_region(chr=None, start=None, end=None, enhancer_name=None,
         conn.close()
         return enhancers_details, dict(condition_counts)
 
-    except pymysql.MySQLError as e:
+    except mariadb.Error as e:
         print(f"Database error: {e}")
         return [], {}
 
@@ -270,7 +270,7 @@ def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_con
                           time_cluster=None, immune_process=None):
     try:
         conn = connect_db()
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor = conn.cursor(dictionary=True)
 
         query = """
         SELECT DISTINCT
@@ -326,7 +326,7 @@ def associations_by_symbol(symbol=None, geneid=None, activity_score=500, exp_con
         conn.close()
         return result
 
-    except pymysql.MySQLError as e:
+    except mariadb.Error as e:
         print(f"Error connecting/querying database: {e}")
         return []
 
@@ -460,7 +460,7 @@ def search_by_activity_class(chr=None, start=None, end=None, enhancer_name=None,
         conn.close()
         return result_dicts
 
-    except pymysql.MySQLError as e:
+    except mariadb.Error as e:
         print(f"Database error: {e}")
         return []
     
@@ -639,7 +639,7 @@ def autocomplete_gene():
         conn.close()
         return jsonify(suggestions)
 
-    except pymysql.MySQLError as e:
+    except mariadb.Error as e:
         print(f"Error in autocomplete: {e}")
         return jsonify([])
 

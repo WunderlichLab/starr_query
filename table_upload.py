@@ -49,7 +49,7 @@ def connect_db():
         database=os.getenv("DB_NAME"),
         port=int(os.getenv("DB_PORT", 3306)),
         ssl=True,
-        ssl_ca=str(CA_PATH),
+        ssl_verify_cert=False
     )
 
 
