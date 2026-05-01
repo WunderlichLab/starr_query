@@ -3,3 +3,7 @@ base_data/
 .env
 logfc.ipynb
 tab structures.xlsx
+aiven_env
+local_env
+.gitignore
+ca.pem
