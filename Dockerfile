@@ -21,7 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Application source code
 COPY app.py        .
-COPY ca.pem        .
 COPY templates/    templates/
 COPY static/       static/
 
@@ -32,7 +31,7 @@ COPY starr_query.wsgi .
 COPY apache/starr_query.conf /etc/apache2/sites-available/starr_query.conf
 
 # Enable mod_wsgi and our site, disable the default site
-RUN a2enmod wsgi \
+RUN a2enmod wsgi headers \
     && a2ensite starr_query \
     && a2dissite 000-default
 
