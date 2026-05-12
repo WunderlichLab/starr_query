@@ -1,48 +1,37 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 
-## System dependencies 
-# apache2
-# libapache2-mod-wsgi-py3
-# libmariadb-dev + libmariadb3
-# gcc / pkg-config
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     apache2 \
-    libapache2-mod-wsgi-py3 \
+    apache2-dev \
     libmariadb-dev \
     libmariadb3 \
     gcc \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies 
 WORKDIR /var/www/starr_query
+
+# Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir mod_wsgi
 
-# Application source code
-COPY app.py        .
-COPY templates/    templates/
-COPY static/       static/
-
-# WSGI entry point
+# App source
+COPY app.py .
+COPY templates/ templates/
+COPY static/ static/
 COPY starr_query.wsgi .
 
-# Apache virtual host config
+# Apache config
 COPY apache/starr_query.conf /etc/apache2/sites-available/starr_query.conf
 
-# Enable mod_wsgi and our site, disable the default site
-RUN a2enmod wsgi headers \
+# Configure Apache to load the mod_wsgi built for this Python
+RUN mod_wsgi-express module-config > /etc/apache2/mods-available/wsgi.load \
+    && a2enmod wsgi headers \
     && a2ensite starr_query \
     && a2dissite 000-default
 
 EXPOSE 80
 
-# Env var placeholders (BU injects real values at runtime)
-ENV DB_HOST=""
-ENV DB_USER=""
-ENV DB_PASS=""
-ENV DB_NAME=""
-ENV DB_PORT="3306"
-
-# Start Apache in the foreground so the container stays alive
 CMD ["apache2ctl", "-D", "FOREGROUND"]
